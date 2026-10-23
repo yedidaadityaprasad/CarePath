@@ -1,0 +1,36 @@
+@model CoverageDetailsViewModel
+@{
+    var c = Model.Coverage;
+    ViewData["Title"] = "Coverage";
+    var canEdit = User.IsInRole(Roles.Physician) || User.IsInRole(Roles.Nurse) || User.IsInRole(Roles.BillingClerk);
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@c.Payer.Name coverage</h1>
+        <div class="text-muted">@c.Patient.FullName (@c.Patient.MedicalRecordNumber)</div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.Active(c.IsActive)">@(c.IsActive ? "Active" : "Terminated")</span>
+</div>
+<div class="card shadow-sm mb-3" style="max-width: 48rem">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Payer</dt><dd class="col-sm-8">@c.Payer.Name (@c.Payer.Code)</dd>
+            <dt class="col-sm-4">Member id</dt><dd class="col-sm-8">@c.MemberId</dd>
+            <dt class="col-sm-4">Group number</dt><dd class="col-sm-8">@(c.GroupNumber ?? "-")</dd>
+            <dt class="col-sm-4">Effective</dt><dd class="col-sm-8">@c.EffectiveFrom.ToString("yyyy-MM-dd") to @(c.EffectiveTo?.ToString("yyyy-MM-dd") ?? "open-ended")</dd>
+            <dt class="col-sm-4">Coverage</dt><dd class="col-sm-8">@c.CoveragePercent.ToString("0.##")%</dd>
+            <dt class="col-sm-4">Used by admissions</dt><dd class="col-sm-8">@Model.AdmissionCount</dd>
+            @if (!c.IsActive)
+            {
+                <dt class="col-sm-4">Terminated</dt><dd class="col-sm-8">@c.TerminatedAt?.ToString("yyyy-MM-dd HH:mm") - @c.TerminationReason</dd>
+            }
+        </dl>
+    </div>
+</div>
+@if (canEdit && c.IsActive)
+{
+    <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-outline-primary btn-sm mb-3">Edit</a>
+    <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Coverages", Action = "Terminate", Id = c.Id, ButtonText = "Terminate coverage", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Terminate this coverage?" }' />
+}
+<a asp-controller="Patients" asp-action="Details" asp-route-id="@c.PatientId" class="btn btn-link px-0">Patient record</a>
+<a asp-action="Index" class="btn btn-link">All coverage</a>

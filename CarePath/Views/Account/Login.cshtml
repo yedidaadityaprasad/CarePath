@@ -1,0 +1,33 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-3">Sign in to CarePath</h1>
+                <form asp-action="Login" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="username" autofocus />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label"></label>
+                        <span asp-validation-for="RememberMe" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

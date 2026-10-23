@@ -1,0 +1,49 @@
+@model WardIndexViewModel
+@{
+    ViewData["Title"] = "Wards";
+    var isAdmin = User.IsInRole(Roles.Admin);
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Wards</h1>
+    <div>
+        <a class="btn btn-outline-secondary" asp-controller="Beds" asp-action="Index">All beds</a>
+        @if (isAdmin)
+        {
+            <a class="btn btn-primary" asp-action="Create">Add ward</a>
+        }
+    </div>
+</div>
+<form asp-action="Index" method="get" class="mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-check form-check-inline">
+        <input asp-for="IncludeClosed" class="form-check-input" onchange="this.form.submit()" />
+        <label asp-for="IncludeClosed" class="form-check-label"></label>
+        <span asp-validation-for="IncludeClosed" class="text-danger"></span>
+    </div>
+    <noscript><button type="submit" class="btn btn-sm btn-outline-primary">Apply</button></noscript>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Code</th><th>Name</th><th>Department</th><th>Floor</th><th>Daily rate</th><th>Beds</th><th>Occupied</th><th>Available</th><th>Out of service</th><th>Occupancy</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var s in Model.Wards)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@s.Ward.Id">@s.Ward.Code</a></td>
+                <td>@s.Ward.Name</td>
+                <td>@s.Ward.Department.Name</td>
+                <td>@s.Ward.Floor</td>
+                <td>@s.Ward.DailyRate.ToString("N2")</td>
+                <td>@s.TotalBeds</td>
+                <td>@s.Occupied</td>
+                <td>@s.Available</td>
+                <td>@s.OutOfService</td>
+                <td>@s.OccupancyPercent%</td>
+                <td><span class="badge @StatusBadges.Active(!s.Ward.IsClosed)">@(s.Ward.IsClosed ? "Closed" : "Open")</span></td>
+            </tr>
+        }
+        @if (Model.Wards.Count == 0)
+        {
+            <tr><td colspan="11" class="text-muted">No wards configured.</td></tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,29 @@
+@model TransferViewModel
+@{
+    ViewData["Title"] = "Transfer patient";
+}
+<h1 class="h3 mb-1">Transfer @Model.PatientName</h1>
+<p class="text-muted">Admission @Model.AdmissionNumber &middot; currently in @Model.CurrentBed</p>
+<form asp-action="Transfer" asp-route-id="@Model.AdmissionId" method="post" class="card card-body shadow-sm" style="max-width: 48rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="AdmissionId" />
+    <input type="hidden" asp-for="AdmissionNumber" />
+    <input type="hidden" asp-for="PatientName" />
+    <input type="hidden" asp-for="CurrentBed" />
+    <div class="mb-3">
+        <label asp-for="NewBedId" class="form-label"></label>
+        <select asp-for="NewBedId" asp-items="Model.Beds" class="form-select">
+            <option value="">-- select available bed --</option>
+        </select>
+        <span asp-validation-for="NewBedId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Reason" class="form-label"></label>
+        <textarea asp-for="Reason" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Reason" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Transfer</button>
+        <a asp-action="Details" asp-route-id="@Model.AdmissionId" class="btn btn-link">Cancel</a>
+    </div>
+</form>

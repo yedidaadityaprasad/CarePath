@@ -1,0 +1,27 @@
+@model StatusActionFormModel
+@*
+    Renders a POST form for a status change. Reason-required actions get a validated text box
+    whose name matches ReasonActionViewModel so it binds on the server.
+*@
+<form asp-controller="@Model.Controller" asp-action="@Model.Action" method="post" class="status-action mb-2"
+      data-confirm="@Model.ConfirmMessage">
+    <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+    <input type="hidden" name="Id" value="@Model.Id" />
+    @if (Model.RequireReason)
+    {
+        <div class="input-group input-group-sm">
+            <input type="text" name="Reason" class="form-control" placeholder="Reason" maxlength="500"
+                   aria-label="Reason for @Model.ButtonText"
+                   data-val="true"
+                   data-val-required="A reason is required."
+                   data-val-length="The reason must be between 3 and 500 characters."
+                   data-val-length-min="3" data-val-length-max="500" />
+            <button type="submit" class="btn @Model.ButtonClass">@Model.ButtonText</button>
+        </div>
+        <span class="text-danger small field-validation-valid" data-valmsg-for="Reason" data-valmsg-replace="true"></span>
+    }
+    else
+    {
+        <button type="submit" class="btn btn-sm @Model.ButtonClass">@Model.ButtonText</button>
+    }
+</form>

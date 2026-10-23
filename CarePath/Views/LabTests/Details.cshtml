@@ -1,0 +1,33 @@
+@model LabTestDetailsViewModel
+@{
+    var t = Model.Test;
+    ViewData["Title"] = t.Name;
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <h1 class="h3 mb-0">@t.Name <small class="text-muted">@t.Code</small></h1>
+    <span class="badge fs-6 @StatusBadges.Active(t.IsActive)">@(t.IsActive ? "Active" : "Retired")</span>
+</div>
+<div class="card shadow-sm mb-3" style="max-width: 40rem">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-5">Specimen type</dt><dd class="col-sm-7">@t.SpecimenType.Name</dd>
+            <dt class="col-sm-5">Result type</dt><dd class="col-sm-7">@t.ResultType</dd>
+            <dt class="col-sm-5">Reference</dt><dd class="col-sm-7">@t.ReferenceRangeDisplay</dd>
+            <dt class="col-sm-5">Price</dt><dd class="col-sm-7">@t.Price.ToString("N2")</dd>
+            <dt class="col-sm-5">Times ordered</dt><dd class="col-sm-7">@Model.OrderCount</dd>
+        </dl>
+    </div>
+</div>
+@if (User.IsInRole(Roles.Admin))
+{
+    <a asp-action="Edit" asp-route-id="@t.Id" class="btn btn-outline-primary btn-sm mb-2">Edit</a>
+    @if (t.IsActive)
+    {
+        <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "LabTests", Action = "Retire", Id = t.Id, ButtonText = "Retire test", ButtonClass = "btn-outline-danger", ConfirmMessage = "Retire this test? It can no longer be ordered." }' />
+    }
+    else
+    {
+        <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "LabTests", Action = "Activate", Id = t.Id, ButtonText = "Reactivate test", ButtonClass = "btn-outline-success" }' />
+    }
+}
+<a asp-action="Index" class="btn btn-link px-0">Back to catalog</a>

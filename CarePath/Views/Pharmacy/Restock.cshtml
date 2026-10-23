@@ -1,0 +1,27 @@
+@model RestockViewModel
+@{
+    ViewData["Title"] = "Restock";
+}
+<h1 class="h3 mb-1">Restock @Model.DrugName</h1>
+<p class="text-muted">@Model.WardName &middot; currently @Model.QuantityOnHand on hand</p>
+<form asp-action="Restock" asp-route-id="@Model.StockId" method="post" class="card card-body shadow-sm" style="max-width: 36rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="StockId" />
+    <input type="hidden" asp-for="WardName" />
+    <input type="hidden" asp-for="DrugName" />
+    <input type="hidden" asp-for="QuantityOnHand" />
+    <div class="mb-3">
+        <label asp-for="Quantity" class="form-label"></label>
+        <input asp-for="Quantity" class="form-control" />
+        <span asp-validation-for="Quantity" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Reference" class="form-label"></label>
+        <input asp-for="Reference" class="form-control" placeholder="Delivery note number" />
+        <span asp-validation-for="Reference" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-success">Record delivery</button>
+        <a asp-action="Details" asp-route-id="@Model.StockId" class="btn btn-link">Cancel</a>
+    </div>
+</form>

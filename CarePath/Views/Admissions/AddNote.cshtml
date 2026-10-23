@@ -1,0 +1,21 @@
+@model AdmissionNoteViewModel
+@{
+    ViewData["Title"] = "Add progress note";
+}
+<h1 class="h3 mb-1">Progress note</h1>
+<p class="text-muted">@Model.AdmissionNumber &middot; @Model.PatientName</p>
+<form asp-action="AddNote" asp-route-id="@Model.AdmissionId" method="post" class="card card-body shadow-sm" style="max-width: 48rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="AdmissionId" />
+    <input type="hidden" asp-for="AdmissionNumber" />
+    <input type="hidden" asp-for="PatientName" />
+    <div class="mb-3">
+        <label asp-for="Text" class="form-label"></label>
+        <textarea asp-for="Text" class="form-control" rows="6"></textarea>
+        <span asp-validation-for="Text" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Save note</button>
+        <a asp-action="Details" asp-route-id="@Model.AdmissionId" class="btn btn-link">Cancel</a>
+    </div>
+</form>

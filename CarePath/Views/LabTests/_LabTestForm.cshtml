@@ -1,0 +1,55 @@
+@model LabTestFormViewModel
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="row g-3">
+    <div class="col-md-3">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-5">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="SpecimenTypeId" class="form-label"></label>
+        <select asp-for="SpecimenTypeId" asp-items="Model.SpecimenTypes" class="form-select">
+            <option value="">-- select --</option>
+        </select>
+        <span asp-validation-for="SpecimenTypeId" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="ResultType" class="form-label"></label>
+        <select asp-for="ResultType" asp-items="Html.GetEnumSelectList<ResultValueType>()" class="form-select">
+            <option value="">-- select --</option>
+        </select>
+        <span asp-validation-for="ResultType" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Unit" class="form-label"></label>
+        <input asp-for="Unit" class="form-control" />
+        <span asp-validation-for="Unit" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="ReferenceLow" class="form-label"></label>
+        <input asp-for="ReferenceLow" class="form-control" step="any" />
+        <span asp-validation-for="ReferenceLow" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="ReferenceHigh" class="form-label"></label>
+        <input asp-for="ReferenceHigh" class="form-control" step="any" />
+        <span asp-validation-for="ReferenceHigh" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="ReferenceText" class="form-label"></label>
+        <input asp-for="ReferenceText" class="form-control" placeholder="e.g. Negative" />
+        <span asp-validation-for="ReferenceText" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Price" class="form-label"></label>
+        <input asp-for="Price" class="form-control" step="0.01" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+</div>
+<p class="small text-muted mt-2 mb-0">Numeric tests use the low/high range; text tests use the expected text result.</p>

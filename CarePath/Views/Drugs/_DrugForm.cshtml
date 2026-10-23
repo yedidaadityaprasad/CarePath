@@ -1,0 +1,37 @@
+@model DrugFormViewModel
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="row g-3">
+    <div class="col-md-3">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-5">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="DrugCategoryId" class="form-label"></label>
+        <select asp-for="DrugCategoryId" asp-items="Model.Categories" class="form-select">
+            <option value="">-- select --</option>
+        </select>
+        <span asp-validation-for="DrugCategoryId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Strength" class="form-label"></label>
+        <input asp-for="Strength" class="form-control" placeholder="500 mg" />
+        <span asp-validation-for="Strength" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Form" class="form-label"></label>
+        <input asp-for="Form" class="form-control" placeholder="Tablet" />
+        <span asp-validation-for="Form" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="UnitPrice" class="form-label"></label>
+        <input asp-for="UnitPrice" class="form-control" step="0.01" />
+        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+    </div>
+</div>

@@ -1,0 +1,36 @@
+@model DispenseViewModel
+@{
+    ViewData["Title"] = "Dispense";
+}
+<h1 class="h3 mb-1">Dispense @Model.OrderNumber</h1>
+<p class="text-muted">@Model.PatientName &middot; @Model.WardName</p>
+<div class="card shadow-sm mb-3" style="max-width: 40rem">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Drug</dt><dd class="col-sm-8">@Model.DrugName</dd>
+            <dt class="col-sm-4">Dose</dt><dd class="col-sm-8">@Model.Dose</dd>
+            <dt class="col-sm-4">Quantity</dt><dd class="col-sm-8">@Model.Quantity</dd>
+            <dt class="col-sm-4">Ward stock</dt><dd class="col-sm-8">@(Model.QuantityOnHand?.ToString() ?? "Not stocked on this ward")</dd>
+        </dl>
+    </div>
+</div>
+<form asp-action="Dispense" asp-route-id="@Model.OrderId" method="post" class="card card-body shadow-sm" style="max-width: 40rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="OrderId" />
+    <input type="hidden" asp-for="OrderNumber" />
+    <input type="hidden" asp-for="PatientName" />
+    <input type="hidden" asp-for="DrugName" />
+    <input type="hidden" asp-for="WardName" />
+    <input type="hidden" asp-for="Dose" />
+    <input type="hidden" asp-for="Quantity" />
+    <input type="hidden" asp-for="QuantityOnHand" />
+    <div class="mb-3">
+        <label asp-for="Notes" class="form-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-success">Dispense</button>
+        <a asp-action="Queue" class="btn btn-link">Back to queue</a>
+    </div>
+</form>

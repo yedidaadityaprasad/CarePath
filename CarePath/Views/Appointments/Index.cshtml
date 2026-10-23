@@ -1,0 +1,51 @@
+@model AppointmentIndexViewModel
+@{
+    ViewData["Title"] = "Appointments";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Appointments</h1>
+    <a class="btn btn-primary" asp-action="Create" asp-route-practitionerId="@Model.PractitionerId">Book appointment</a>
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-2">
+        <label asp-for="From" class="form-label"></label>
+        <input asp-for="From" class="form-control" />
+        <span asp-validation-for="From" class="text-danger"></span>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="To" class="form-label"></label>
+        <input asp-for="To" class="form-control" />
+        <span asp-validation-for="To" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="PractitionerId" class="form-label"></label>
+        <select asp-for="PractitionerId" asp-items="Model.Practitioners" class="form-select"><option value="">Anyone</option></select>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<AppointmentStatus>()" class="form-select"><option value="">Any</option></select>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Starts</th><th>Duration</th><th>Patient</th><th>Practitioner</th><th>Reason</th><th>Location</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var a in Model.Appointments)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@a.Id">@a.StartsAt.ToString("yyyy-MM-dd HH:mm")</a></td>
+                <td>@a.DurationMinutes min</td>
+                <td>@a.Patient.FullName</td>
+                <td>@a.Practitioner.DisplayName</td>
+                <td>@a.Reason</td>
+                <td>@a.Location</td>
+                <td><span class="badge @StatusBadges.For(a.Status)">@a.Status</span></td>
+            </tr>
+        }
+        @if (Model.Appointments.Count == 0)
+        {
+            <tr><td colspan="7" class="text-muted">No appointments in this range.</td></tr>
+        }
+    </tbody>
+</table>

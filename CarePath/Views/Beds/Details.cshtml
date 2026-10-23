@@ -1,0 +1,87 @@
+@model BedDetailsViewModel
+@{
+    var b = Model.Bed;
+    ViewData["Title"] = b.BedLabel();
+    var isAdmin = User.IsInRole(Roles.Admin);
+    var clinical = User.IsInRole(Roles.Physician) || User.IsInRole(Roles.Nurse);
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">Bed @b.BedNumber</h1>
+        <div class="text-muted"><a asp-controller="Wards" asp-action="Details" asp-route-id="@b.WardId">@b.Ward.Name</a></div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.For(b.Status)">@b.Status</span>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header">Current state</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">@(b.Notes ?? "-")</dd>
+                    <dt class="col-sm-4">Occupant</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.CurrentAdmission != null)
+                        {
+                            @if (clinical)
+                            {
+                                <a asp-controller="Admissions" asp-action="Details" asp-route-id="@Model.CurrentAdmission.Id">@Model.CurrentAdmission.AdmissionNumber</a>
+                            }
+                            else
+                            {
+                                @Model.CurrentAdmission.AdmissionNumber
+                            }
+                            <span> - @Model.CurrentAdmission.Patient.FullName</span>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        @if (isAdmin)
+        {
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <a asp-action="Edit" asp-route-id="@b.Id" class="btn btn-outline-primary btn-sm mb-2">Edit</a>
+                    @if (b.Status == BedStatus.Available)
+                    {
+                        <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Beds", Action = "OutOfService", Id = b.Id, ButtonText = "Take out of service", ButtonClass = "btn-outline-danger", RequireReason = true }' />
+                    }
+                    else if (b.Status == BedStatus.OutOfService)
+                    {
+                        <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Beds", Action = "ReturnToService", Id = b.Id, ButtonText = "Return to service", ButtonClass = "btn-outline-success", RequireReason = true }' />
+                    }
+                    else
+                    {
+                        <p class="small text-muted mb-0">Occupied beds are released by transfer or discharge.</p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header">Status history</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>When</th><th>From</th><th>To</th><th>By</th><th>Reason</th></tr></thead>
+                    <tbody>
+                        @foreach (var h in Model.History)
+                        {
+                            <tr><td>@h.ChangedAt.ToString("yyyy-MM-dd HH:mm")</td><td>@h.FromStatus</td><td>@h.ToStatus</td><td>@h.ChangedBy</td><td>@h.Reason</td></tr>
+                        }
+                        @if (Model.History.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-muted">No status changes recorded.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a asp-action="Index" asp-route-wardId="@b.WardId" class="btn btn-link mt-2 px-0">Back to beds</a>

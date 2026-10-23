@@ -1,0 +1,107 @@
+@model PatientFormViewModel
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+<fieldset class="mb-3">
+    <legend class="h6 text-muted">Identity</legend>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="MedicalRecordNumber" class="form-label"></label>
+            @if (Model.IsEdit)
+            {
+                <input asp-for="MedicalRecordNumber" class="form-control" readonly />
+            }
+            else
+            {
+                <input asp-for="MedicalRecordNumber" class="form-control" />
+            }
+            <span asp-validation-for="MedicalRecordNumber" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="FirstName" class="form-label"></label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="LastName" class="form-label"></label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="DateOfBirth" class="form-label"></label>
+            <input asp-for="DateOfBirth" class="form-control" />
+            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Gender" class="form-label"></label>
+            <select asp-for="Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-select">
+                <option value="">-- select --</option>
+            </select>
+            <span asp-validation-for="Gender" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+</fieldset>
+<fieldset class="mb-3">
+    <legend class="h6 text-muted">Address</legend>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="AddressLine1" class="form-label"></label>
+            <input asp-for="AddressLine1" class="form-control" />
+            <span asp-validation-for="AddressLine1" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="AddressLine2" class="form-label"></label>
+            <input asp-for="AddressLine2" class="form-control" />
+            <span asp-validation-for="AddressLine2" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="City" class="form-label"></label>
+            <input asp-for="City" class="form-control" />
+            <span asp-validation-for="City" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="State" class="form-label"></label>
+            <input asp-for="State" class="form-control" />
+            <span asp-validation-for="State" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="PostalCode" class="form-label"></label>
+            <input asp-for="PostalCode" class="form-control" />
+            <span asp-validation-for="PostalCode" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Country" class="form-label"></label>
+            <input asp-for="Country" class="form-control" />
+            <span asp-validation-for="Country" class="text-danger"></span>
+        </div>
+    </div>
+</fieldset>
+<fieldset class="mb-3">
+    <legend class="h6 text-muted">Emergency contact</legend>
+    <div class="row g-3">
+        <div class="col-md-5">
+            <label asp-for="ContactName" class="form-label"></label>
+            <input asp-for="ContactName" class="form-control" />
+            <span asp-validation-for="ContactName" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="ContactRelationship" class="form-label"></label>
+            <input asp-for="ContactRelationship" class="form-control" />
+            <span asp-validation-for="ContactRelationship" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ContactPhone" class="form-label"></label>
+            <input asp-for="ContactPhone" class="form-control" />
+            <span asp-validation-for="ContactPhone" class="text-danger"></span>
+        </div>
+    </div>
+</fieldset>

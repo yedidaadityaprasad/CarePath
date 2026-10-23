@@ -1,0 +1,51 @@
+@model AdmissionIndexViewModel
+@{
+    ViewData["Title"] = "Admissions";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Admissions</h1>
+    <a class="btn btn-primary" asp-action="Create">Admit patient</a>
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-4">
+        <label asp-for="Search" class="form-label"></label>
+        <input asp-for="Search" class="form-control" />
+        <span asp-validation-for="Search" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="WardId" class="form-label"></label>
+        <select asp-for="WardId" asp-items="Model.Wards" class="form-select">
+            <option value="">All wards</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<AdmissionStatus>()" class="form-select">
+            <option value="">Any</option>
+        </select>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Admission</th><th>Patient</th><th>Bed</th><th>Attending</th><th>Admitted</th><th>Discharged</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var a in Model.Results.Items)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@a.Id">@a.AdmissionNumber</a></td>
+                <td>@a.Patient.FullName <span class="small text-muted">@a.Patient.MedicalRecordNumber</span></td>
+                <td>@a.CurrentBed.BedLabel()</td>
+                <td>@a.AttendingPractitioner.DisplayName</td>
+                <td>@a.AdmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(a.DischargedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                <td><span class="badge @StatusBadges.For(a.Status)">@a.Status</span></td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="7" class="text-muted">No admissions match.</td></tr>
+        }
+    </tbody>
+</table>
+<partial name="_Pager" model="Model.Results" />

@@ -1,0 +1,41 @@
+@model LabWorklistViewModel
+@{
+    ViewData["Title"] = "Lab worklist";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Laboratory worklist</h1>
+    <a class="btn btn-outline-secondary" asp-controller="LabTests" asp-action="Index">Test catalog</a>
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-3">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<OrderStatus>()" class="form-select">
+            <option value="">Pending (placed and in progress)</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Order</th><th>Test</th><th>Patient</th><th>Location</th><th>Priority</th><th>Placed</th><th>Specimen</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var o in Model.Orders)
+        {
+            <tr class="@(o.Priority == OrderPriority.Stat ? "table-danger" : o.Priority == OrderPriority.Urgent ? "table-warning" : "")">
+                <td><a asp-action="Details" asp-route-id="@o.Id">@o.OrderNumber</a></td>
+                <td>@o.Description</td>
+                <td>@o.Admission.Patient.FullName</td>
+                <td>@o.Admission.CurrentBed.BedLabel()</td>
+                <td>@o.Priority</td>
+                <td>@o.PlacedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(o.LabDetail?.Specimen?.AccessionNumber ?? "-")</td>
+                <td><span class="badge @StatusBadges.For(o.Status)">@o.Status</span></td>
+            </tr>
+        }
+        @if (Model.Orders.Count == 0)
+        {
+            <tr><td colspan="8" class="text-muted">The worklist is empty.</td></tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,31 @@
+@model DispenseQueueViewModel
+@{
+    ViewData["Title"] = "Dispense queue";
+}
+<h1 class="h3 mb-3">Dispense queue</h1>
+<p class="text-muted">Medication orders waiting to be dispensed from the stock of the patient's current ward.</p>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Order</th><th>Drug</th><th>Dose</th><th>Qty</th><th>Patient</th><th>Ward</th><th>On hand</th><th>Priority</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            var o = item.Order;
+            var m = o.MedicationDetail!;
+            <tr class="@(item.CanDispense ? "" : "table-warning")">
+                <td>@o.OrderNumber</td>
+                <td>@m.Drug.DisplayName</td>
+                <td>@m.Dose @m.Route @m.Frequency</td>
+                <td>@m.Quantity</td>
+                <td>@o.Admission.Patient.FullName</td>
+                <td>@item.Ward.Name</td>
+                <td>@(item.QuantityOnHand?.ToString() ?? "not stocked")</td>
+                <td><span class="badge @StatusBadges.For(o.Priority)">@o.Priority</span></td>
+                <td><a asp-action="Dispense" asp-route-id="@o.Id" class="btn btn-sm @(item.CanDispense ? "btn-success" : "btn-outline-secondary")">Dispense</a></td>
+            </tr>
+        }
+        @if (Model.Items.Count == 0)
+        {
+            <tr><td colspan="9" class="text-muted">Nothing waiting.</td></tr>
+        }
+    </tbody>
+</table>

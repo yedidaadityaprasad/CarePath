@@ -1,0 +1,57 @@
+@model WardStockIndexViewModel
+@{
+    ViewData["Title"] = "Ward stock";
+    var canManage = User.IsInRole(Roles.Pharmacist) || User.IsInRole(Roles.Admin);
+    var pharmacist = User.IsInRole(Roles.Pharmacist);
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Ward stock</h1>
+    <div>
+        @if (pharmacist)
+        {
+            <a class="btn btn-outline-primary" asp-action="Queue">Dispense queue</a>
+        }
+        @if (canManage)
+        {
+            <a class="btn btn-primary" asp-action="Create" asp-route-wardId="@Model.WardId">Add stock line</a>
+        }
+    </div>
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-4">
+        <label asp-for="WardId" class="form-label"></label>
+        <select asp-for="WardId" asp-items="Model.Wards" class="form-select"><option value="">All wards</option></select>
+        <span asp-validation-for="WardId" class="text-danger"></span>
+    </div>
+    <div class="col-auto form-check ms-2 mb-2">
+        <input asp-for="LowStockOnly" class="form-check-input" />
+        <label asp-for="LowStockOnly" class="form-check-label"></label>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Ward</th><th>Drug</th><th>On hand</th><th>Reorder level</th><th>Last restocked</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var s in Model.Stock)
+        {
+            <tr class="@(s.BelowReorderLevel ? "table-warning" : "")">
+                <td>@s.Ward.Name</td>
+                <td><a asp-action="Details" asp-route-id="@s.Id">@s.Drug.DisplayName</a></td>
+                <td>@s.QuantityOnHand</td>
+                <td>@s.ReorderLevel</td>
+                <td>@(s.LastRestockedAt?.ToString("yyyy-MM-dd") ?? "-")</td>
+                <td>
+                    @if (pharmacist)
+                    {
+                        <a asp-action="Restock" asp-route-id="@s.Id" class="btn btn-sm btn-outline-success">Restock</a>
+                    }
+                </td>
+            </tr>
+        }
+        @if (Model.Stock.Count == 0)
+        {
+            <tr><td colspan="6" class="text-muted">No stock lines match.</td></tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,56 @@
+@model AdmitPatientViewModel
+@{
+    ViewData["Title"] = "Admit patient";
+}
+<h1 class="h3 mb-3">Admit patient</h1>
+<p class="text-muted">The patient must be active, not already admitted, and hold active insurance coverage on the admission date.</p>
+<form asp-action="Create" method="post" class="card card-body shadow-sm">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="PatientId" class="form-label"></label>
+            <select asp-for="PatientId" asp-items="Model.Patients" class="form-select">
+                <option value="">-- select patient --</option>
+            </select>
+            <span asp-validation-for="PatientId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="AttendingPractitionerId" class="form-label"></label>
+            <select asp-for="AttendingPractitionerId" asp-items="Model.Physicians" class="form-select">
+                <option value="">-- select physician --</option>
+            </select>
+            <span asp-validation-for="AttendingPractitionerId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="BedId" class="form-label"></label>
+            <select asp-for="BedId" asp-items="Model.Beds" class="form-select">
+                <option value="">-- select available bed --</option>
+            </select>
+            <span asp-validation-for="BedId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="AdmittedAt" class="form-label"></label>
+            <input asp-for="AdmittedAt" class="form-control" />
+            <span asp-validation-for="AdmittedAt" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <label asp-for="ReasonForAdmission" class="form-label"></label>
+            <textarea asp-for="ReasonForAdmission" class="form-control" rows="2"></textarea>
+            <span asp-validation-for="ReasonForAdmission" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="DiagnosisCode" class="form-label"></label>
+            <input asp-for="DiagnosisCode" class="form-control" placeholder="e.g. J18.9" />
+            <span asp-validation-for="DiagnosisCode" class="text-danger"></span>
+        </div>
+        <div class="col-md-9">
+            <label asp-for="DiagnosisDescription" class="form-label"></label>
+            <input asp-for="DiagnosisDescription" class="form-control" />
+            <span asp-validation-for="DiagnosisDescription" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Admit</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>

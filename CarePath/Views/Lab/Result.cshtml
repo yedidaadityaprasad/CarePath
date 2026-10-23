@@ -1,0 +1,46 @@
+@model LabResultFormViewModel
+@{
+    ViewData["Title"] = "Enter result";
+    var numeric = Model.ResultType == ResultValueType.Numeric;
+}
+<h1 class="h3 mb-1">Result for @Model.OrderNumber</h1>
+<p class="text-muted">@Model.TestName &middot; @Model.PatientName &middot; reference @Model.ReferenceRange</p>
+<form asp-action="Result" asp-route-id="@Model.OrderId" method="post" class="card card-body shadow-sm" style="max-width: 40rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="OrderId" />
+    <input type="hidden" asp-for="OrderNumber" />
+    <input type="hidden" asp-for="TestName" />
+    <input type="hidden" asp-for="PatientName" />
+    <input type="hidden" asp-for="ResultType" />
+    <input type="hidden" asp-for="ReferenceRange" />
+    <input type="hidden" asp-for="Unit" />
+    @if (numeric)
+    {
+        <div class="mb-3">
+            <label asp-for="NumericValue" class="form-label"></label>
+            <div class="input-group">
+                <input asp-for="NumericValue" class="form-control" step="any" />
+                @if (!string.IsNullOrEmpty(Model.Unit)) { <span class="input-group-text">@Model.Unit</span> }
+            </div>
+            <span asp-validation-for="NumericValue" class="text-danger"></span>
+        </div>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label asp-for="TextValue" class="form-label"></label>
+            <input asp-for="TextValue" class="form-control" />
+            <span asp-validation-for="TextValue" class="text-danger"></span>
+        </div>
+    }
+    <div class="mb-3">
+        <label asp-for="Comment" class="form-label"></label>
+        <textarea asp-for="Comment" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Comment" class="text-danger"></span>
+    </div>
+    <p class="small text-muted">Saving the result flags it against the reference range and completes the order. Results cannot be changed afterwards.</p>
+    <div>
+        <button type="submit" class="btn btn-primary">Save result</button>
+        <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-link">Cancel</a>
+    </div>
+</form>

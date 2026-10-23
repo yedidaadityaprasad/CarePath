@@ -1,0 +1,28 @@
+@model AdmissionEditViewModel
+@{
+    ViewData["Title"] = "Edit admission";
+}
+<h1 class="h3 mb-1">Edit admission @Model.AdmissionNumber</h1>
+<p class="text-muted">@Model.PatientName</p>
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="card card-body shadow-sm" style="max-width: 48rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="AdmissionNumber" />
+    <input type="hidden" asp-for="PatientName" />
+    <div class="mb-3">
+        <label asp-for="AttendingPractitionerId" class="form-label"></label>
+        <select asp-for="AttendingPractitionerId" asp-items="Model.Physicians" class="form-select">
+            <option value="">-- select physician --</option>
+        </select>
+        <span asp-validation-for="AttendingPractitionerId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ReasonForAdmission" class="form-label"></label>
+        <textarea asp-for="ReasonForAdmission" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="ReasonForAdmission" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-link">Cancel</a>
+    </div>
+</form>

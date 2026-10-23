@@ -1,0 +1,12 @@
+@model LabTestFormViewModel
+@{
+    ViewData["Title"] = "Add lab test";
+}
+<h1 class="h3 mb-3">Add lab test</h1>
+<form asp-action="Create" method="post" class="card card-body shadow-sm">
+    <partial name="_LabTestForm" model="Model" />
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>

@@ -1,0 +1,22 @@
+@model WardStockFormViewModel
+@{
+    ViewData["Title"] = "Edit reorder level";
+}
+<h1 class="h3 mb-1">Edit reorder level</h1>
+<p class="text-muted">Quantities change only through restock and dispense so every movement is recorded.</p>
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="card card-body shadow-sm" style="max-width: 32rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="WardId" />
+    <input type="hidden" asp-for="DrugId" />
+    <input type="hidden" asp-for="InitialQuantity" />
+    <div class="mb-3">
+        <label asp-for="ReorderLevel" class="form-label"></label>
+        <input asp-for="ReorderLevel" class="form-control" />
+        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-link">Cancel</a>
+    </div>
+</form>

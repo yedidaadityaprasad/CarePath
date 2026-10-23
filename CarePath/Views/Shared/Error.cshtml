@@ -1,0 +1,20 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h1 class="h4 text-danger">@Model.Title</h1>
+                <p>@Model.Message</p>
+                <p class="mb-0">The problem has been logged. If it keeps happening, contact support and quote the reference below.</p>
+                @if (Model.ShowRequestId)
+                {
+                    <p class="small text-muted mt-2 mb-0">Reference: <code>@Model.RequestId</code></p>
+                }
+            </div>
+        </div>
+        <a class="btn btn-link mt-3" asp-controller="Home" asp-action="Index">Back to dashboard</a>
+    </div>
+</div>

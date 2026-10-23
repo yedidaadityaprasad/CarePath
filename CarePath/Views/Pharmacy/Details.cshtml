@@ -1,0 +1,60 @@
+@model WardStockDetailsViewModel
+@{
+    var s = Model.Stock;
+    ViewData["Title"] = s.Drug.DisplayName;
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@s.Drug.DisplayName</h1>
+        <div class="text-muted">@s.Ward.Name</div>
+    </div>
+    <span class="badge fs-6 @(s.BelowReorderLevel ? "bg-warning text-dark" : "bg-success")">@s.QuantityOnHand on hand</span>
+</div>
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-6">Reorder level</dt><dd class="col-sm-6">@s.ReorderLevel</dd>
+                    <dt class="col-sm-6">Last restocked</dt><dd class="col-sm-6">@(s.LastRestockedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+        @if (User.IsInRole(Roles.Pharmacist))
+        {
+            <a asp-action="Restock" asp-route-id="@s.Id" class="btn btn-success btn-sm">Restock</a>
+        }
+        @if (User.IsInRole(Roles.Pharmacist) || User.IsInRole(Roles.Admin))
+        {
+            <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-outline-primary btn-sm">Edit reorder level</a>
+        }
+    </div>
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header">Stock movements</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>When</th><th>Type</th><th>Change</th><th>After</th><th>Reference</th><th>By</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in Model.Movements)
+                        {
+                            <tr>
+                                <td>@m.OccurredAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@m.Type</td>
+                                <td class="@(m.QuantityChange < 0 ? "text-danger" : "text-success")">@m.QuantityChange.ToString("+0;-0;0")</td>
+                                <td>@m.QuantityAfter</td>
+                                <td>@m.Reference</td>
+                                <td>@m.PerformedBy</td>
+                            </tr>
+                        }
+                        @if (Model.Movements.Count == 0)
+                        {
+                            <tr><td colspan="6" class="text-muted">No movements.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a asp-action="Index" asp-route-wardId="@s.WardId" class="btn btn-link mt-2 px-0">Back to ward stock</a>

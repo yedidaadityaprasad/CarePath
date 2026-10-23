@@ -1,0 +1,36 @@
+@model ShiftDetailsViewModel
+@{
+    var s = Model.Shift;
+    ViewData["Title"] = "Shift";
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@s.Practitioner.DisplayName</h1>
+        <div class="text-muted">@s.Ward.Name &middot; @s.StartsAt.ToString("yyyy-MM-dd HH:mm") to @s.EndsAt.ToString("yyyy-MM-dd HH:mm")</div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.For(s.Status)">@s.Status</span>
+</div>
+<div class="card shadow-sm mb-3" style="max-width: 40rem">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Duration</dt><dd class="col-sm-8">@((s.EndsAt - s.StartsAt).TotalHours.ToString("0.#")) hours</dd>
+            <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">@(s.Notes ?? "-")</dd>
+            <dt class="col-sm-4">Scheduled</dt><dd class="col-sm-8">@s.CreatedAt.ToString("yyyy-MM-dd HH:mm") by @s.CreatedBy</dd>
+            @if (s.Status == ShiftStatus.Cancelled)
+            {
+                <dt class="col-sm-4">Cancelled</dt><dd class="col-sm-8">@s.CancelledAt?.ToString("yyyy-MM-dd HH:mm") - @s.CancellationReason</dd>
+            }
+        </dl>
+    </div>
+</div>
+@if (Model.CanEdit)
+{
+    <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-outline-primary btn-sm mb-2">Edit</a>
+}
+@if (Model.CanCancel)
+{
+    <div style="max-width: 32rem">
+        <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Shifts", Action = "Cancel", Id = s.Id, ButtonText = "Cancel shift", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Cancel this shift?" }' />
+    </div>
+}
+<a asp-action="Index" class="btn btn-link px-0">Back to roster</a>

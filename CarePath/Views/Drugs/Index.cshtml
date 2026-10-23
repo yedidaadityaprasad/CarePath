@@ -1,0 +1,45 @@
+@model DrugIndexViewModel
+@{
+    ViewData["Title"] = "Drug formulary";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Drug formulary</h1>
+    @if (User.IsInRole(Roles.Admin))
+    {
+        <a class="btn btn-primary" asp-action="Create">Add drug</a>
+    }
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-4">
+        <label asp-for="Search" class="form-label"></label>
+        <input asp-for="Search" class="form-control" />
+        <span asp-validation-for="Search" class="text-danger"></span>
+    </div>
+    <div class="col-auto form-check ms-2 mb-2">
+        <input asp-for="IncludeInactive" class="form-check-input" />
+        <label asp-for="IncludeInactive" class="form-check-label"></label>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Search</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Code</th><th>Name</th><th>Strength</th><th>Form</th><th>Category</th><th>Unit price</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var d in Model.Drugs)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@d.Id">@d.Code</a></td>
+                <td>@d.Name</td>
+                <td>@d.Strength</td>
+                <td>@d.Form</td>
+                <td>@d.Category.Name</td>
+                <td>@d.UnitPrice.ToString("N2")</td>
+                <td><span class="badge @StatusBadges.Active(d.IsActive)">@(d.IsActive ? "Active" : "Discontinued")</span></td>
+            </tr>
+        }
+        @if (Model.Drugs.Count == 0)
+        {
+            <tr><td colspan="7" class="text-muted">No drugs match.</td></tr>
+        }
+    </tbody>
+</table>

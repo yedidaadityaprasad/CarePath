@@ -1,0 +1,53 @@
+@model CoverageFormViewModel
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="PatientId" class="form-label"></label>
+        @if (Model.IsEdit)
+        {
+            <input type="hidden" asp-for="PatientId" />
+            <input type="hidden" asp-for="PatientName" />
+            <input class="form-control" value="@Model.PatientName" readonly />
+        }
+        else
+        {
+            <select asp-for="PatientId" asp-items="Model.Patients" class="form-select">
+                <option value="">-- select patient --</option>
+            </select>
+        }
+        <span asp-validation-for="PatientId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="PayerId" class="form-label"></label>
+        <select asp-for="PayerId" asp-items="Model.Payers" class="form-select">
+            <option value="">-- select payer --</option>
+        </select>
+        <span asp-validation-for="PayerId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="MemberId" class="form-label"></label>
+        <input asp-for="MemberId" class="form-control" />
+        <span asp-validation-for="MemberId" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="GroupNumber" class="form-label"></label>
+        <input asp-for="GroupNumber" class="form-control" />
+        <span asp-validation-for="GroupNumber" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="CoveragePercent" class="form-label"></label>
+        <input asp-for="CoveragePercent" class="form-control" />
+        <span asp-validation-for="CoveragePercent" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="EffectiveFrom" class="form-label"></label>
+        <input asp-for="EffectiveFrom" class="form-control" />
+        <span asp-validation-for="EffectiveFrom" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="EffectiveTo" class="form-label"></label>
+        <input asp-for="EffectiveTo" class="form-control" />
+        <span asp-validation-for="EffectiveTo" class="text-danger"></span>
+    </div>
+</div>

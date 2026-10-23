@@ -1,0 +1,28 @@
+@model SpecimenFormViewModel
+@{
+    ViewData["Title"] = "Record specimen";
+}
+<h1 class="h3 mb-1">Record specimen for @Model.OrderNumber</h1>
+<p class="text-muted">@Model.TestName &middot; @Model.PatientName &middot; @Model.SpecimenTypeName</p>
+<form asp-action="Specimen" asp-route-id="@Model.OrderId" method="post" class="card card-body shadow-sm" style="max-width: 40rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="OrderId" />
+    <input type="hidden" asp-for="OrderNumber" />
+    <input type="hidden" asp-for="TestName" />
+    <input type="hidden" asp-for="PatientName" />
+    <input type="hidden" asp-for="SpecimenTypeName" />
+    <div class="mb-3">
+        <label asp-for="CollectedAt" class="form-label"></label>
+        <input asp-for="CollectedAt" class="form-control" />
+        <span asp-validation-for="CollectedAt" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Notes" class="form-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Save specimen</button>
+        <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-link">Cancel</a>
+    </div>
+</form>

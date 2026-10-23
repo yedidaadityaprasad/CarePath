@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CarePath</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @{
+        var signedIn = User.Identity?.IsAuthenticated == true;
+        bool InAny(string roles) => roles.Split(',').Any(r => User.IsInRole(r));
+        var clinical = InAny(Roles.Clinical);
+        var admin = User.IsInRole(Roles.Admin);
+    }
+    <header class="d-print-none">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">CarePath</a>
+                @if (signedIn)
+                {
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="mainNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                            @if (clinical)
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Patients" asp-action="Index">Patients</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admissions" asp-action="Index">Admissions</a></li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Care</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Orders" asp-action="Index">Clinical orders</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Lab" asp-action="Index">Laboratory worklist</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Appointments" asp-action="Index">Appointments</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Shifts" asp-action="Index">Shifts</a></li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (InAny(Roles.CoverageViewers))
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Coverages" asp-action="Index">Coverage</a></li>
+                            }
+                            @if (InAny(Roles.ClinicalAndAdmin))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Facility</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Wards" asp-action="Index">Wards</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Beds" asp-action="Index">Beds</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Practitioners" asp-action="Index">Practitioners</a></li>
+                                        <li><a class="dropdown-item" asp-controller="LabTests" asp-action="Index">Lab test catalog</a></li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (InAny(Roles.PharmacyViewers))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Pharmacy</a>
+                                    <ul class="dropdown-menu">
+                                        @if (User.IsInRole(Roles.Pharmacist))
+                                        {
+                                            <li><a class="dropdown-item" asp-controller="Pharmacy" asp-action="Queue">Dispense queue</a></li>
+                                        }
+                                        <li><a class="dropdown-item" asp-controller="Pharmacy" asp-action="Index">Ward stock</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Drugs" asp-action="Index">Drug catalog</a></li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (InAny(Roles.BillingViewers))
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Invoices" asp-action="Index">Billing</a></li>
+                            }
+                            @if (admin)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Payers" asp-action="Index">Payers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Users</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Audit" asp-action="Index">Audit log</a></li>
+                                    </ul>
+                                </li>
+                            }
+                        </ul>
+                        <div class="d-flex align-items-center text-white">
+                            <span class="me-3 small">@User.Identity!.Name</span>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                <div asp-validation-summary="ModelOnly" class="d-none"></div>
+                                <button type="submit" class="btn btn-sm btn-outline-light">Sign out</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </nav>
+    </header>
+
+    <main class="container-fluid px-4 pb-4" role="main">
+        @if (TempData[TempDataExtensions.SuccessKey] is string success)
+        {
+            <div class="alert alert-success alert-dismissible fade show d-print-none" role="alert">
+                @success
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData[TempDataExtensions.ErrorKey] is string error)
+        {
+            <div class="alert alert-danger alert-dismissible fade show d-print-none" role="alert">
+                @error
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <footer class="border-top text-muted small py-3 px-4 d-print-none">
+        CarePath hospital operations &middot; &copy; @DateTime.Now.Year
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

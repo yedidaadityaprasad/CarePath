@@ -1,0 +1,47 @@
+@model BedIndexViewModel
+@{
+    ViewData["Title"] = "Beds";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Beds</h1>
+    @if (User.IsInRole(Roles.Admin))
+    {
+        <a class="btn btn-primary" asp-action="Create" asp-route-wardId="@Model.WardId">Add bed</a>
+    }
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-4">
+        <label asp-for="WardId" class="form-label"></label>
+        <select asp-for="WardId" asp-items="Model.Wards" class="form-select">
+            <option value="">All wards</option>
+        </select>
+        <span asp-validation-for="WardId" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<BedStatus>()" class="form-select">
+            <option value="">Any</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Bed</th><th>Ward</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+        @foreach (var b in Model.Beds)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@b.Id">@b.BedNumber</a></td>
+                <td>@b.Ward.Name @(b.Ward.IsClosed ? "(closed)" : "")</td>
+                <td><span class="badge @StatusBadges.For(b.Status)">@b.Status</span></td>
+                <td>@b.Notes</td>
+            </tr>
+        }
+        @if (Model.Beds.Count == 0)
+        {
+            <tr><td colspan="4" class="text-muted">No beds match.</td></tr>
+        }
+    </tbody>
+</table>

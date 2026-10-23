@@ -1,0 +1,32 @@
+@model AllergyFormViewModel
+@{
+    ViewData["Title"] = "Record allergy";
+}
+<h1 class="h3 mb-1">Record allergy</h1>
+<p class="text-muted">@Model.PatientName</p>
+<form asp-action="AddAllergy" method="post" class="card card-body shadow-sm" style="max-width: 40rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="PatientId" />
+    <input type="hidden" asp-for="PatientName" />
+    <div class="mb-3">
+        <label asp-for="Substance" class="form-label"></label>
+        <input asp-for="Substance" class="form-control" />
+        <span asp-validation-for="Substance" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Reaction" class="form-label"></label>
+        <input asp-for="Reaction" class="form-control" />
+        <span asp-validation-for="Reaction" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Severity" class="form-label"></label>
+        <select asp-for="Severity" asp-items="Html.GetEnumSelectList<AllergySeverity>()" class="form-select">
+            <option value="">-- select --</option>
+        </select>
+        <span asp-validation-for="Severity" class="text-danger"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Details" asp-route-id="@Model.PatientId" class="btn btn-link">Cancel</a>
+    </div>
+</form>

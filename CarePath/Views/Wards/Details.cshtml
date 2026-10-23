@@ -1,0 +1,75 @@
+@model WardDetailsViewModel
+@{
+    var w = Model.Ward;
+    ViewData["Title"] = w.Name;
+    var isAdmin = User.IsInRole(Roles.Admin);
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@w.Name <small class="text-muted">@w.Code</small></h1>
+        <div class="text-muted">@w.Department.Name &middot; Floor @w.Floor &middot; Daily rate @w.DailyRate.ToString("N2")</div>
+        @if (w.IsClosed)
+        {
+            <div class="text-danger small">Closed @w.ClosedAt?.ToString("yyyy-MM-dd HH:mm"): @w.ClosureReason</div>
+        }
+    </div>
+    <span class="badge fs-6 @StatusBadges.Active(!w.IsClosed)">@(w.IsClosed ? "Closed" : "Open")</span>
+</div>
+
+@if (isAdmin)
+{
+    <div class="mb-3">
+        <a asp-action="Edit" asp-route-id="@w.Id" class="btn btn-outline-primary btn-sm">Edit</a>
+        <a asp-controller="Beds" asp-action="Create" asp-route-wardId="@w.Id" class="btn btn-outline-secondary btn-sm">Add bed</a>
+        <a asp-controller="Pharmacy" asp-action="Index" asp-route-wardId="@w.Id" class="btn btn-outline-secondary btn-sm">Ward stock</a>
+    </div>
+}
+
+<div class="card shadow-sm mb-3">
+    <div class="card-header">Beds</div>
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Bed</th><th>Status</th><th>Occupant</th><th>Notes</th></tr></thead>
+            <tbody>
+                @foreach (var b in Model.Beds)
+                {
+                    Model.OccupantsByBed.TryGetValue(b.Id, out var occ);
+                    <tr>
+                        <td><a asp-controller="Beds" asp-action="Details" asp-route-id="@b.Id">@b.BedNumber</a></td>
+                        <td><span class="badge @StatusBadges.For(b.Status)">@b.Status</span></td>
+                        <td>
+                            @if (occ != null)
+                            {
+                                <span>@occ.Patient.FullName (@occ.AdmissionNumber)</span>
+                            }
+                        </td>
+                        <td>@b.Notes</td>
+                    </tr>
+                }
+                @if (Model.Beds.Count == 0)
+                {
+                    <tr><td colspan="4" class="text-muted">No beds in this ward.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (isAdmin)
+{
+    <div class="card shadow-sm" style="max-width: 36rem">
+        <div class="card-header">Ward status</div>
+        <div class="card-body">
+            @if (w.IsClosed)
+            {
+                <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Wards", Action = "Reopen", Id = w.Id, ButtonText = "Reopen ward", ButtonClass = "btn-outline-success" }' />
+            }
+            else
+            {
+                <p class="small text-muted mb-1">A ward can only be closed when none of its beds are occupied.</p>
+                <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Wards", Action = "Close", Id = w.Id, ButtonText = "Close ward", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Close this ward?" }' />
+            }
+        </div>
+    </div>
+}
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to wards</a>

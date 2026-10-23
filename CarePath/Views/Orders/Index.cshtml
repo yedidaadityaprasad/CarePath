@@ -1,0 +1,56 @@
+@model OrderIndexViewModel
+@{
+    ViewData["Title"] = "Clinical orders";
+    var physician = User.IsInRole(Roles.Physician);
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Clinical orders</h1>
+    @if (physician)
+    {
+        <div>
+            <a class="btn btn-primary" asp-action="CreateLab">New lab order</a>
+            <a class="btn btn-primary" asp-action="CreateMedication">New medication order</a>
+        </div>
+    }
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-4">
+        <label asp-for="Search" class="form-label"></label>
+        <input asp-for="Search" class="form-control" />
+        <span asp-validation-for="Search" class="text-danger"></span>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="Type" class="form-label"></label>
+        <select asp-for="Type" asp-items="Html.GetEnumSelectList<OrderType>()" class="form-select"><option value="">Any</option></select>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="Html.GetEnumSelectList<OrderStatus>()" class="form-select"><option value="">Any</option></select>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Order</th><th>Type</th><th>Item</th><th>Patient</th><th>Admission</th><th>Priority</th><th>Ordered by</th><th>Placed</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var o in Model.Results.Items)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@o.Id">@o.OrderNumber</a></td>
+                <td>@o.Type</td>
+                <td>@o.Description</td>
+                <td>@o.Admission.Patient.FullName</td>
+                <td><a asp-controller="Admissions" asp-action="Details" asp-route-id="@o.AdmissionId">@o.Admission.AdmissionNumber</a></td>
+                <td>@o.Priority</td>
+                <td>@o.OrderingPractitioner.DisplayName</td>
+                <td>@o.PlacedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td><span class="badge @StatusBadges.For(o.Status)">@o.Status</span></td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="9" class="text-muted">No orders match.</td></tr>
+        }
+    </tbody>
+</table>
+<partial name="_Pager" model="Model.Results" />

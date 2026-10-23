@@ -1,0 +1,171 @@
+@model PatientDetailsViewModel
+@{
+    var p = Model.Patient;
+    ViewData["Title"] = p.FullName;
+    var contact = p.EmergencyContacts.FirstOrDefault(c => c.IsPrimary);
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@p.FullName</h1>
+        <div class="text-muted">@p.MedicalRecordNumber &middot; @p.Gender &middot; @p.AgeOn(DateTime.Today) years</div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.Active(p.IsActive)">@(p.IsActive ? "Active" : "Deactivated")</span>
+</div>
+
+<div class="mb-3">
+    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-outline-primary btn-sm">Edit demographics</a>
+    <a asp-action="AddAllergy" asp-route-id="@p.Id" class="btn btn-outline-secondary btn-sm">Record allergy</a>
+    <a asp-controller="Coverages" asp-action="Create" asp-route-patientId="@p.Id" class="btn btn-outline-secondary btn-sm">Attach coverage</a>
+    @if (p.IsActive && Model.OpenAdmission == null)
+    {
+        <a asp-controller="Admissions" asp-action="Create" asp-route-patientId="@p.Id" class="btn btn-success btn-sm">Admit</a>
+        <a asp-controller="Appointments" asp-action="Create" asp-route-patientId="@p.Id" class="btn btn-outline-success btn-sm">Book appointment</a>
+    }
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">Demographics</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Date of birth</dt><dd class="col-sm-8">@p.DateOfBirth.ToString("yyyy-MM-dd")</dd>
+                    <dt class="col-sm-4">Phone</dt><dd class="col-sm-8">@(p.Phone ?? "-")</dd>
+                    <dt class="col-sm-4">Email</dt><dd class="col-sm-8">@(p.Email ?? "-")</dd>
+                    <dt class="col-sm-4">Address</dt>
+                    <dd class="col-sm-8">
+                        @if (p.Address != null)
+                        {
+                            @p.Address.Line1<br />
+                            @if (!string.IsNullOrEmpty(p.Address.Line2)) { @p.Address.Line2<br /> }
+                            @p.Address.City @p.Address.State @p.Address.PostalCode<br />
+                            @p.Address.Country
+                        }
+                    </dd>
+                    <dt class="col-sm-4">Emergency contact</dt>
+                    <dd class="col-sm-8">@(contact == null ? "-" : $"{contact.Name} ({contact.Relationship}) {contact.Phone}")</dd>
+                    <dt class="col-sm-4">Registered</dt><dd class="col-sm-8">@p.RegisteredAt.ToString("yyyy-MM-dd")</dd>
+                    @if (!p.IsActive)
+                    {
+                        <dt class="col-sm-4">Deactivated</dt>
+                        <dd class="col-sm-8">@p.DeactivatedAt?.ToString("yyyy-MM-dd HH:mm") - @p.DeactivationReason</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">Allergies</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Substance</th><th>Reaction</th><th>Severity</th></tr></thead>
+                    <tbody>
+                        @foreach (var a in p.Allergies.OrderBy(a => a.Substance))
+                        {
+                            <tr><td>@a.Substance</td><td>@a.Reaction</td><td>@a.Severity</td></tr>
+                        }
+                        @if (!p.Allergies.Any())
+                        {
+                            <tr><td colspan="3" class="text-muted">No known allergies recorded.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Insurance coverage</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Payer</th><th>Member id</th><th>Effective</th><th>%</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var c in Model.Coverages)
+                        {
+                            <tr>
+                                <td><a asp-controller="Coverages" asp-action="Details" asp-route-id="@c.Id">@c.Payer.Name</a></td>
+                                <td>@c.MemberId</td>
+                                <td>@c.EffectiveFrom.ToString("yyyy-MM-dd") to @(c.EffectiveTo?.ToString("yyyy-MM-dd") ?? "open")</td>
+                                <td>@c.CoveragePercent.ToString("0.##")</td>
+                                <td><span class="badge @StatusBadges.Active(c.IsActive)">@(c.IsActive ? "Active" : "Terminated")</span></td>
+                            </tr>
+                        }
+                        @if (Model.Coverages.Count == 0)
+                        {
+                            <tr><td colspan="5" class="text-muted">No coverage on file. Active coverage is required to admit.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Upcoming appointments</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        @foreach (var a in Model.UpcomingAppointments)
+                        {
+                            <tr>
+                                <td><a asp-controller="Appointments" asp-action="Details" asp-route-id="@a.Id">@a.StartsAt.ToString("yyyy-MM-dd HH:mm")</a></td>
+                                <td>@a.Practitioner.DisplayName</td>
+                                <td>@a.Reason</td>
+                            </tr>
+                        }
+                        @if (Model.UpcomingAppointments.Count == 0)
+                        {
+                            <tr><td class="text-muted">None booked.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">Admissions</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Number</th><th>Admitted</th><th>Discharged</th><th>Bed</th><th>Attending</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @foreach (var a in Model.Admissions)
+                        {
+                            <tr>
+                                <td><a asp-controller="Admissions" asp-action="Details" asp-route-id="@a.Id">@a.AdmissionNumber</a></td>
+                                <td>@a.AdmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@(a.DischargedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                                <td>@a.CurrentBed.BedLabel()</td>
+                                <td>@a.AttendingPractitioner.DisplayName</td>
+                                <td><span class="badge @StatusBadges.For(a.Status)">@a.Status</span></td>
+                            </tr>
+                        }
+                        @if (Model.Admissions.Count == 0)
+                        {
+                            <tr><td colspan="6" class="text-muted">No admissions.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mt-3">
+    <div class="card-header">Status</div>
+    <div class="card-body">
+        @if (p.IsActive)
+        {
+            <p class="small text-muted">Deactivating cancels future appointments. A deactivated patient cannot be admitted or booked.</p>
+            <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Patients", Action = "Deactivate", Id = p.Id, ButtonText = "Deactivate", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Deactivate this patient?" }' />
+        }
+        else
+        {
+            <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Patients", Action = "Reactivate", Id = p.Id, ButtonText = "Reactivate", ButtonClass = "btn-outline-success" }' />
+        }
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to patients</a>

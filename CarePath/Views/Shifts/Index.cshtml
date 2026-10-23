@@ -1,0 +1,54 @@
+@model ShiftIndexViewModel
+@{
+    ViewData["Title"] = "Shifts";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Shift roster</h1>
+    <a class="btn btn-primary" asp-action="Create" asp-route-wardId="@Model.WardId">Schedule shift</a>
+</div>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-3">
+        <label asp-for="WardId" class="form-label"></label>
+        <select asp-for="WardId" asp-items="Model.Wards" class="form-select"><option value="">All wards</option></select>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="PractitionerId" class="form-label"></label>
+        <select asp-for="PractitionerId" asp-items="Model.Practitioners" class="form-select"><option value="">Anyone</option></select>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="From" class="form-label"></label>
+        <input asp-for="From" class="form-control" />
+        <span asp-validation-for="From" class="text-danger"></span>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="To" class="form-label"></label>
+        <input asp-for="To" class="form-control" />
+        <span asp-validation-for="To" class="text-danger"></span>
+    </div>
+    <div class="col-auto form-check ms-2 mb-2">
+        <input asp-for="IncludeCancelled" class="form-check-input" />
+        <label asp-for="IncludeCancelled" class="form-check-label"></label>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Starts</th><th>Ends</th><th>Hours</th><th>Practitioner</th><th>Ward</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var s in Model.Shifts)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@s.Id">@s.StartsAt.ToString("yyyy-MM-dd HH:mm")</a></td>
+                <td>@s.EndsAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@((s.EndsAt - s.StartsAt).TotalHours.ToString("0.#"))</td>
+                <td>@s.Practitioner.DisplayName</td>
+                <td>@s.Ward.Name</td>
+                <td><span class="badge @StatusBadges.For(s.Status)">@s.Status</span></td>
+            </tr>
+        }
+        @if (Model.Shifts.Count == 0)
+        {
+            <tr><td colspan="6" class="text-muted">No shifts in this range.</td></tr>
+        }
+    </tbody>
+</table>

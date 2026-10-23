@@ -1,0 +1,35 @@
+@model ShiftFormViewModel
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="PractitionerId" class="form-label"></label>
+        <select asp-for="PractitionerId" asp-items="Model.Practitioners" class="form-select">
+            <option value="">-- select --</option>
+        </select>
+        <span asp-validation-for="PractitionerId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="WardId" class="form-label"></label>
+        <select asp-for="WardId" asp-items="Model.Wards" class="form-select">
+            <option value="">-- select --</option>
+        </select>
+        <span asp-validation-for="WardId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="StartsAt" class="form-label"></label>
+        <input asp-for="StartsAt" class="form-control" />
+        <span asp-validation-for="StartsAt" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="EndsAt" class="form-label"></label>
+        <input asp-for="EndsAt" class="form-control" />
+        <span asp-validation-for="EndsAt" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="Notes" class="form-label"></label>
+        <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Notes" class="text-danger"></span>
+    </div>
+</div>
+<p class="small text-muted mt-2 mb-0">Shifts may not exceed 16 hours or overlap another scheduled shift for the same practitioner.</p>

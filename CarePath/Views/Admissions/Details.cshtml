@@ -1,0 +1,166 @@
+@model AdmissionDetailsViewModel
+@{
+    var a = Model.Admission;
+    ViewData["Title"] = a.AdmissionNumber;
+    var physician = User.IsInRole(Roles.Physician);
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">Admission @a.AdmissionNumber</h1>
+        <div class="text-muted">
+            <a asp-controller="Patients" asp-action="Details" asp-route-id="@a.PatientId">@a.Patient.FullName</a>
+            (@a.Patient.MedicalRecordNumber) &middot; @a.CurrentBed.BedLabel() &middot; @Model.LengthOfStayDays day(s)
+        </div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.For(a.Status)">@a.Status</span>
+</div>
+
+@if (a.IsOpen)
+{
+    <div class="mb-3 d-flex flex-wrap gap-1">
+        <a asp-action="Edit" asp-route-id="@a.Id" class="btn btn-outline-primary btn-sm">Edit</a>
+        <a asp-action="Transfer" asp-route-id="@a.Id" class="btn btn-outline-secondary btn-sm">Transfer</a>
+        <a asp-action="AddNote" asp-route-id="@a.Id" class="btn btn-outline-secondary btn-sm">Add note</a>
+        <a asp-action="RecordVitals" asp-route-id="@a.Id" class="btn btn-outline-secondary btn-sm">Record vitals</a>
+        @if (physician)
+        {
+            <a asp-controller="Orders" asp-action="CreateLab" asp-route-admissionId="@a.Id" class="btn btn-outline-secondary btn-sm">Order lab test</a>
+            <a asp-controller="Orders" asp-action="CreateMedication" asp-route-admissionId="@a.Id" class="btn btn-outline-secondary btn-sm">Order medication</a>
+        }
+        <a asp-action="Discharge" asp-route-id="@a.Id" class="btn btn-danger btn-sm">Discharge</a>
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Summary</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Attending</dt><dd class="col-sm-7">@a.AttendingPractitioner.DisplayName</dd>
+                    <dt class="col-sm-5">Admitted</dt><dd class="col-sm-7">@a.AdmittedAt.ToString("yyyy-MM-dd HH:mm") by @a.AdmittedBy</dd>
+                    <dt class="col-sm-5">Discharged</dt><dd class="col-sm-7">@(a.DischargedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</dd>
+                    <dt class="col-sm-5">Reason</dt><dd class="col-sm-7">@a.ReasonForAdmission</dd>
+                    <dt class="col-sm-5">Coverage</dt><dd class="col-sm-7">@a.Coverage.Payer.Name @a.Coverage.CoveragePercent.ToString("0.##")% (@a.Coverage.MemberId)</dd>
+                    @if (a.Invoice != null)
+                    {
+                        <dt class="col-sm-5">Invoice</dt>
+                        <dd class="col-sm-7">
+                            @a.Invoice.InvoiceNumber <span class="badge @StatusBadges.For(a.Invoice.Status)">@a.Invoice.Status</span>
+                        </dd>
+                    }
+                </dl>
+            </div>
+        </div>
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Diagnoses</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var d in a.Diagnoses.OrderByDescending(d => d.IsPrimary))
+                {
+                    <li class="list-group-item"><strong>@d.Code</strong> @d.Description @if (d.IsPrimary) { <span class="badge bg-primary">primary</span> }</li>
+                }
+            </ul>
+        </div>
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Bed history</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Bed</th><th>From</th><th>To</th><th>Reason</th></tr></thead>
+                    <tbody>
+                        @foreach (var b in a.BedAssignments.OrderBy(b => b.AssignedAt))
+                        {
+                            <tr><td>@b.Bed.BedLabel()</td><td>@b.AssignedAt.ToString("MM-dd HH:mm")</td><td>@(b.ReleasedAt?.ToString("MM-dd HH:mm") ?? "now")</td><td>@b.Reason</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if (a.DischargeSummary != null)
+        {
+            var s = a.DischargeSummary;
+            <div class="card shadow-sm mb-3 border-secondary">
+                <div class="card-header">Discharge summary</div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Disposition:</strong> @s.Disposition</p>
+                    <p class="mb-1"><strong>Final diagnosis:</strong> @s.FinalDiagnosis</p>
+                    <p class="mb-1" style="white-space: pre-line">@s.Summary</p>
+                    @if (!string.IsNullOrEmpty(s.FollowUpInstructions))
+                    {
+                        <p class="mb-1"><strong>Follow-up:</strong> @s.FollowUpInstructions</p>
+                    }
+                    <p class="small text-muted mb-0">Written @s.WrittenAt.ToString("yyyy-MM-dd HH:mm") by @s.WrittenBy</p>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Orders</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Order</th><th>Type</th><th>Item</th><th>Priority</th><th>Placed</th><th>Status</th></tr></thead>
+                    <tbody>
+                        @foreach (var o in a.Orders.OrderByDescending(o => o.PlacedAt))
+                        {
+                            <tr>
+                                <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">@o.OrderNumber</a></td>
+                                <td>@o.Type</td>
+                                <td>@o.Description</td>
+                                <td>@o.Priority</td>
+                                <td>@o.PlacedAt.ToString("MM-dd HH:mm")</td>
+                                <td><span class="badge @StatusBadges.For(o.Status)">@o.Status</span></td>
+                            </tr>
+                        }
+                        @if (!a.Orders.Any())
+                        {
+                            <tr><td colspan="6" class="text-muted">No orders.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Vital signs</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>When</th><th>Temp</th><th>Pulse</th><th>BP</th><th>Resp</th><th>SpO2</th><th>By</th></tr></thead>
+                    <tbody>
+                        @foreach (var v in a.Vitals.OrderByDescending(v => v.RecordedAt))
+                        {
+                            <tr>
+                                <td>@v.RecordedAt.ToString("MM-dd HH:mm")</td>
+                                <td>@v.TemperatureCelsius.ToString("0.0")</td>
+                                <td>@v.PulseBpm</td>
+                                <td>@v.SystolicBp/@v.DiastolicBp</td>
+                                <td>@v.RespiratoryRate</td>
+                                <td>@v.OxygenSaturation%</td>
+                                <td>@v.RecordedBy</td>
+                            </tr>
+                        }
+                        @if (!a.Vitals.Any())
+                        {
+                            <tr><td colspan="7" class="text-muted">No vitals recorded.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header">Progress notes</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var n in a.Notes.OrderByDescending(n => n.WrittenAt))
+                {
+                    <li class="list-group-item">
+                        <div class="small text-muted">@n.WrittenAt.ToString("yyyy-MM-dd HH:mm") &middot; @n.Author</div>
+                        <div style="white-space: pre-line">@n.Text</div>
+                    </li>
+                }
+                @if (!a.Notes.Any())
+                {
+                    <li class="list-group-item text-muted">No notes yet.</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to admissions</a>

@@ -1,0 +1,32 @@
+@model WardFormViewModel
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="row g-3">
+    <div class="col-md-3">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-5">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="DepartmentId" class="form-label"></label>
+        <select asp-for="DepartmentId" asp-items="Model.Departments" class="form-select">
+            <option value="">-- select --</option>
+        </select>
+        <span asp-validation-for="DepartmentId" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Floor" class="form-label"></label>
+        <input asp-for="Floor" class="form-control" />
+        <span asp-validation-for="Floor" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="DailyRate" class="form-label"></label>
+        <input asp-for="DailyRate" class="form-control" step="0.01" />
+        <span asp-validation-for="DailyRate" class="text-danger"></span>
+    </div>
+</div>

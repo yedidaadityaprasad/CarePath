@@ -1,0 +1,74 @@
+@model LabOrderViewModel
+@{
+    var o = Model.Order;
+    var d = Model.Detail;
+    ViewData["Title"] = o.OrderNumber;
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@o.OrderNumber: @d.TestDefinition.Name</h1>
+        <div class="text-muted">@o.Admission.Patient.FullName (@o.Admission.Patient.MedicalRecordNumber) &middot; @o.Admission.CurrentBed.BedLabel() &middot; @o.Priority</div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.For(o.Status)">@o.Status</span>
+</div>
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Ordered by</dt><dd class="col-sm-8">@o.OrderingPractitioner.DisplayName</dd>
+                    <dt class="col-sm-4">Placed</dt><dd class="col-sm-8">@o.PlacedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+                    <dt class="col-sm-4">Indication</dt><dd class="col-sm-8">@(d.ClinicalIndication ?? "-")</dd>
+                    <dt class="col-sm-4">Specimen type</dt><dd class="col-sm-8">@d.TestDefinition.SpecimenType.Name</dd>
+                    <dt class="col-sm-4">Reference</dt><dd class="col-sm-8">@d.TestDefinition.ReferenceRangeDisplay</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Specimen</div>
+            <div class="card-body">
+                @if (d.Specimen != null)
+                {
+                    <p class="mb-0">@d.Specimen.AccessionNumber collected @d.Specimen.CollectedAt.ToString("yyyy-MM-dd HH:mm") by @d.Specimen.CollectedBy</p>
+                    @if (!string.IsNullOrEmpty(d.Specimen.Notes)) { <p class="small text-muted mb-0">@d.Specimen.Notes</p> }
+                }
+                else if (o.Status == OrderStatus.InProgress)
+                {
+                    <a asp-action="Specimen" asp-route-id="@o.Id" class="btn btn-sm btn-primary">Record specimen collection</a>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Not collected.</p>
+                }
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header">Result</div>
+            <div class="card-body">
+                @if (d.Result != null)
+                {
+                    <p class="fs-5 mb-1">@d.Result.DisplayValue @d.TestDefinition.Unit <span class="badge @StatusBadges.For(d.Result.Flag)">@d.Result.Flag</span></p>
+                    <p class="small text-muted mb-0">Resulted @d.Result.ResultedAt.ToString("yyyy-MM-dd HH:mm") by @d.Result.ResultedBy</p>
+                    @if (!string.IsNullOrEmpty(d.Result.Comment)) { <p class="mb-0">@d.Result.Comment</p> }
+                }
+                else if (d.Specimen != null && o.Status == OrderStatus.InProgress)
+                {
+                    <a asp-action="Result" asp-route-id="@o.Id" class="btn btn-sm btn-primary">Enter result</a>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Pending.</p>
+                }
+            </div>
+        </div>
+        @if (o.Status == OrderStatus.Placed)
+        {
+            <div class="mt-3">
+                <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Lab", Action = "Accept", Id = o.Id, ButtonText = "Accept into lab", ButtonClass = "btn-success" }' />
+            </div>
+        }
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to worklist</a>

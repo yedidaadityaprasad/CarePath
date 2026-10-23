@@ -1,0 +1,149 @@
+@model InvoiceDetailsViewModel
+@{
+    var i = Model.Invoice;
+    ViewData["Title"] = i.InvoiceNumber;
+    var clerk = User.IsInRole(Roles.BillingClerk);
+    var addr = i.Patient.Address;
+    var snap = i.CoverageSnapshot;
+}
+<div class="d-flex justify-content-between align-items-start mb-3 no-print">
+    <div>
+        @if (clerk && i.Status == InvoiceStatus.Draft)
+        {
+            <form asp-action="Issue" method="post" class="d-inline-flex align-items-start gap-2" data-confirm="Issue this invoice to the patient?">
+                <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+                <input type="hidden" name="InvoiceId" value="@i.Id" />
+                <div>
+                    <div class="input-group input-group-sm">
+                        <label class="input-group-text" for="Issue_DueInDays">Due in</label>
+                        <input asp-for="Issue.DueInDays" name="DueInDays" class="form-control" style="width: 5rem" />
+                        <span class="input-group-text">days</span>
+                        <button type="submit" class="btn btn-primary">Issue invoice</button>
+                    </div>
+                    <span class="text-danger small field-validation-valid" data-valmsg-for="DueInDays" data-valmsg-replace="true"></span>
+                </div>
+            </form>
+        }
+        @if (clerk && i.Status == InvoiceStatus.Issued)
+        {
+            <a asp-action="Payment" asp-route-id="@i.Id" class="btn btn-success btn-sm">Record payment</a>
+        }
+    </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">Print</button>
+</div>
+
+<div class="card shadow-sm invoice-sheet">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between mb-4">
+            <div>
+                <h1 class="h4 mb-0">CarePath Hospital</h1>
+                <div class="text-muted small">Patient invoice</div>
+            </div>
+            <div class="text-end">
+                <div class="h5 mb-0">@i.InvoiceNumber</div>
+                <span class="badge @StatusBadges.For(i.Status)">@i.Status</span>
+                <div class="small">Created @i.CreatedAt.ToString("yyyy-MM-dd")</div>
+                @if (i.IssuedAt != null) { <div class="small">Issued @i.IssuedAt?.ToString("yyyy-MM-dd")</div> }
+                @if (i.DueDate != null) { <div class="small">Due @i.DueDate?.ToString("yyyy-MM-dd")</div> }
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-sm-6">
+                <div class="fw-bold">Bill to</div>
+                <div>@i.Patient.FullName (@i.Patient.MedicalRecordNumber)</div>
+                @if (addr != null)
+                {
+                    <div>@addr.Line1</div>
+                    @if (!string.IsNullOrEmpty(addr.Line2)) { <div>@addr.Line2</div> }
+                    <div>@addr.City @addr.State @addr.PostalCode</div>
+                    <div>@addr.Country</div>
+                }
+            </div>
+            <div class="col-sm-6 text-sm-end">
+                <div class="fw-bold">Admission @i.Admission.AdmissionNumber</div>
+                <div>@i.Admission.AdmittedAt.ToString("yyyy-MM-dd") to @(i.Admission.DischargedAt?.ToString("yyyy-MM-dd") ?? "-") (@i.RoomDays day(s))</div>
+                <div>@i.Admission.CurrentBed.BedLabel()</div>
+                <div>Attending: @i.Admission.AttendingPractitioner.DisplayName</div>
+            </div>
+        </div>
+        <table class="table table-sm">
+            <thead><tr><th>Type</th><th>Description</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th class="text-end">Amount</th></tr></thead>
+            <tbody>
+                @foreach (var l in i.Lines.OrderBy(l => l.LineType).ThenBy(l => l.Id))
+                {
+                    <tr>
+                        <td>@l.LineType</td>
+                        <td>@l.Description</td>
+                        <td class="text-end">@l.Quantity.ToString("0.##")</td>
+                        <td class="text-end">@l.UnitPrice.ToString("N2")</td>
+                        <td class="text-end">@l.Amount.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr><th colspan="4" class="text-end">Subtotal</th><th class="text-end">@i.SubTotal.ToString("N2")</th></tr>
+                <tr>
+                    <td colspan="4" class="text-end">
+                        Insurance @(snap == null ? "" : $"{snap.PayerName} ({snap.MemberId}) at {snap.CoveragePercent:0.##}%")
+                    </td>
+                    <td class="text-end">-@i.CoveredAmount.ToString("N2")</td>
+                </tr>
+                <tr><th colspan="4" class="text-end">Patient responsibility</th><th class="text-end">@i.PatientResponsibility.ToString("N2")</th></tr>
+                <tr><td colspan="4" class="text-end">Paid</td><td class="text-end">@i.AmountPaid.ToString("N2")</td></tr>
+                <tr class="table-light"><th colspan="4" class="text-end">Balance due</th><th class="text-end">@i.BalanceDue.ToString("N2")</th></tr>
+            </tfoot>
+        </table>
+        @if (i.Payments.Any())
+        {
+            <h2 class="h6 mt-4">Payments</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Received</th><th>Method</th><th>Reference</th><th>By</th><th class="text-end">Amount</th></tr></thead>
+                <tbody>
+                    @foreach (var p in i.Payments.OrderBy(p => p.ReceivedAt))
+                    {
+                        <tr><td>@p.ReceivedAt.ToString("yyyy-MM-dd HH:mm")</td><td>@p.Method</td><td>@p.Reference</td><td>@p.ReceivedBy</td><td class="text-end">@p.Amount.ToString("N2")</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+        @if (i.Status == InvoiceStatus.Void)
+        {
+            <div class="alert alert-secondary">Voided @i.VoidedAt?.ToString("yyyy-MM-dd HH:mm"): @i.VoidReason</div>
+        }
+    </div>
+</div>
+
+<div class="row g-3 mt-1 no-print">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Status history</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>When</th><th>From</th><th>To</th><th>By</th><th>Note</th></tr></thead>
+                    <tbody>
+                        @foreach (var h in i.StatusChanges.OrderBy(h => h.ChangedAt))
+                        {
+                            <tr><td>@h.ChangedAt.ToString("yyyy-MM-dd HH:mm")</td><td>@h.FromStatus</td><td>@h.ToStatus</td><td>@h.ChangedBy</td><td>@h.Note</td></tr>
+                        }
+                        @if (!i.StatusChanges.Any())
+                        {
+                            <tr><td colspan="5" class="text-muted">Draft since creation.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @if (clerk && (i.Status == InvoiceStatus.Draft || i.Status == InvoiceStatus.Issued) && !i.Payments.Any())
+    {
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header">Void invoice</div>
+                <div class="card-body">
+                    <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Invoices", Action = "Void", Id = i.Id, ButtonText = "Void", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Void this invoice? This cannot be undone." }' />
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0 no-print">Back to invoices</a>

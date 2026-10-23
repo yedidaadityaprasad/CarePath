@@ -1,0 +1,30 @@
+@model PayerFormViewModel
+@* PLANTED-VIOLATION-5: this form has no validation summary, so model errors are not shown at the top. *@
+<input type="hidden" asp-for="Id" />
+<div class="row g-3">
+    <div class="col-md-4">
+        <label asp-for="Code" class="form-label"></label>
+        <input asp-for="Code" class="form-control" />
+        <span asp-validation-for="Code" class="text-danger"></span>
+    </div>
+    <div class="col-md-8">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Phone" class="form-label"></label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="ClaimsEmail" class="form-label"></label>
+        <input asp-for="ClaimsEmail" class="form-control" />
+        <span asp-validation-for="ClaimsEmail" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="DefaultCoveragePercent" class="form-label"></label>
+        <input asp-for="DefaultCoveragePercent" class="form-control" />
+        <span asp-validation-for="DefaultCoveragePercent" class="text-danger"></span>
+    </div>
+</div>

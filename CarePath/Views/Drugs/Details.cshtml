@@ -1,0 +1,62 @@
+@model DrugDetailsViewModel
+@{
+    var d = Model.Drug;
+    ViewData["Title"] = d.DisplayName;
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <h1 class="h3 mb-0">@d.DisplayName <small class="text-muted">@d.Code</small></h1>
+    <span class="badge fs-6 @StatusBadges.Active(d.IsActive)">@(d.IsActive ? "Active" : "Discontinued")</span>
+</div>
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Category</dt><dd class="col-sm-7">@d.Category.Name</dd>
+                    <dt class="col-sm-5">Strength</dt><dd class="col-sm-7">@d.Strength</dd>
+                    <dt class="col-sm-5">Form</dt><dd class="col-sm-7">@d.Form</dd>
+                    <dt class="col-sm-5">Unit price</dt><dd class="col-sm-7">@d.UnitPrice.ToString("N2")</dd>
+                </dl>
+            </div>
+        </div>
+        @if (User.IsInRole(Roles.Admin))
+        {
+            <a asp-action="Edit" asp-route-id="@d.Id" class="btn btn-outline-primary btn-sm mb-2">Edit</a>
+            @if (!d.IsActive)
+            {
+                <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Drugs", Action = "Reinstate", Id = d.Id, ButtonText = "Reinstate", ButtonClass = "btn-outline-success" }' />
+            }
+        }
+        @* PLANTED-VIOLATION-3: discontinue is shown to every role that can open this page, not only Admin. *@
+        @if (d.IsActive)
+        {
+            <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Drugs", Action = "Discontinue", Id = d.Id, ButtonText = "Discontinue", ButtonClass = "btn-outline-danger", ConfirmMessage = "Discontinue this drug? It can no longer be ordered." }' />
+        }
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header">Ward stock</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Ward</th><th>On hand</th><th>Reorder level</th><th>Last restocked</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in Model.Stock)
+                        {
+                            <tr class="@(s.BelowReorderLevel ? "table-warning" : "")">
+                                <td><a asp-controller="Pharmacy" asp-action="Details" asp-route-id="@s.Id">@s.Ward.Name</a></td>
+                                <td>@s.QuantityOnHand</td>
+                                <td>@s.ReorderLevel</td>
+                                <td>@(s.LastRestockedAt?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            </tr>
+                        }
+                        @if (Model.Stock.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-muted">Not stocked on any ward.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to formulary</a>

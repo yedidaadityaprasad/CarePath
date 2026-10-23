@@ -1,0 +1,111 @@
+@model OrderDetailsViewModel
+@{
+    var o = Model.Order;
+    ViewData["Title"] = o.OrderNumber;
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@o.OrderNumber: @o.Description</h1>
+        <div class="text-muted">
+            @o.Type order for @o.Admission.Patient.FullName &middot;
+            <a asp-controller="Admissions" asp-action="Details" asp-route-id="@o.AdmissionId">@o.Admission.AdmissionNumber</a>
+            &middot; @o.Admission.CurrentBed.BedLabel()
+        </div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.For(o.Status)">@o.Status</span>
+</div>
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Order</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Ordered by</dt><dd class="col-sm-8">@o.OrderingPractitioner.DisplayName</dd>
+                    <dt class="col-sm-4">Priority</dt><dd class="col-sm-8">@o.Priority</dd>
+                    <dt class="col-sm-4">Placed</dt><dd class="col-sm-8">@o.PlacedAt.ToString("yyyy-MM-dd HH:mm") by @o.PlacedBy</dd>
+                    <dt class="col-sm-4">Started</dt><dd class="col-sm-8">@(o.StartedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</dd>
+                    <dt class="col-sm-4">Completed</dt><dd class="col-sm-8">@(o.CompletedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</dd>
+                    @if (o.CancelledAt != null)
+                    {
+                        <dt class="col-sm-4">Cancelled</dt><dd class="col-sm-8">@o.CancelledAt?.ToString("yyyy-MM-dd HH:mm") - @o.CancellationReason</dd>
+                    }
+                    <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">@(o.Notes ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+        @if (o.LabDetail != null)
+        {
+            var d = o.LabDetail;
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">Laboratory</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Test</dt><dd class="col-sm-8">@d.TestDefinition.Name (@d.TestDefinition.Code)</dd>
+                        <dt class="col-sm-4">Indication</dt><dd class="col-sm-8">@(d.ClinicalIndication ?? "-")</dd>
+                        <dt class="col-sm-4">Reference</dt><dd class="col-sm-8">@d.TestDefinition.ReferenceRangeDisplay</dd>
+                        <dt class="col-sm-4">Specimen</dt><dd class="col-sm-8">@(d.Specimen == null ? "Not collected" : $"{d.Specimen.AccessionNumber} at {d.Specimen.CollectedAt:yyyy-MM-dd HH:mm}")</dd>
+                        <dt class="col-sm-4">Result</dt>
+                        <dd class="col-sm-8">
+                            @if (d.Result != null)
+                            {
+                                <strong>@d.Result.DisplayValue @d.TestDefinition.Unit</strong>
+                                <span class="badge @StatusBadges.For(d.Result.Flag)">@d.Result.Flag</span>
+                            }
+                            else
+                            {
+                                <span>Pending</span>
+                            }
+                        </dd>
+                    </dl>
+                    <a asp-controller="Lab" asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-secondary mt-2">Open in lab worklist</a>
+                </div>
+            </div>
+        }
+        @if (o.MedicationDetail != null)
+        {
+            var m = o.MedicationDetail;
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">Medication</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Drug</dt><dd class="col-sm-8">@m.Drug.DisplayName</dd>
+                        <dt class="col-sm-4">Dose</dt><dd class="col-sm-8">@m.Dose @m.Route @m.Frequency</dd>
+                        <dt class="col-sm-4">Quantity</dt><dd class="col-sm-8">@m.Quantity</dd>
+                        <dt class="col-sm-4">Dispensed</dt>
+                        <dd class="col-sm-8">@(o.Dispense == null ? "Not yet" : $"{o.Dispense.Quantity} on {o.Dispense.DispensedAt:yyyy-MM-dd HH:mm} by {o.Dispense.DispensedBy}")</dd>
+                    </dl>
+                </div>
+            </div>
+        }
+        @if (o.Status == OrderStatus.Placed)
+        {
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <a asp-action="Edit" asp-route-id="@o.Id" class="btn btn-outline-primary btn-sm mb-2">Edit</a>
+                    <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Orders", Action = "Cancel", Id = o.Id, ButtonText = "Cancel order", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Cancel this order?" }' />
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Status history</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>When</th><th>From</th><th>To</th><th>By</th><th>Note</th></tr></thead>
+                    <tbody>
+                        @foreach (var h in o.StatusChanges.OrderBy(h => h.ChangedAt))
+                        {
+                            <tr><td>@h.ChangedAt.ToString("yyyy-MM-dd HH:mm")</td><td>@h.FromStatus</td><td>@h.ToStatus</td><td>@h.ChangedBy</td><td>@h.Note</td></tr>
+                        }
+                        @if (!o.StatusChanges.Any())
+                        {
+                            <tr><td colspan="5" class="text-muted">No changes since the order was placed.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to orders</a>

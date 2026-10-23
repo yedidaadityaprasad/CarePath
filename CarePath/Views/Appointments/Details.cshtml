@@ -1,0 +1,73 @@
+@model AppointmentDetailsViewModel
+@{
+    var a = Model.Appointment;
+    ViewData["Title"] = "Appointment";
+    var booked = a.Status == AppointmentStatus.Booked;
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@a.Patient.FullName with @a.Practitioner.DisplayName</h1>
+        <div class="text-muted">@a.StartsAt.ToString("dddd yyyy-MM-dd HH:mm") &middot; @a.DurationMinutes minutes @(a.Location == null ? "" : "· " + a.Location)</div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.For(a.Status)">@a.Status</span>
+</div>
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Reason</dt><dd class="col-sm-8">@a.Reason</dd>
+                    <dt class="col-sm-4">Booked</dt><dd class="col-sm-8">@a.BookedAt.ToString("yyyy-MM-dd HH:mm") by @a.BookedBy</dd>
+                    @if (a.CompletedAt != null)
+                    {
+                        <dt class="col-sm-4">Completed</dt><dd class="col-sm-8">@a.CompletedAt?.ToString("yyyy-MM-dd HH:mm")</dd>
+                        <dt class="col-sm-4">Notes</dt><dd class="col-sm-8" style="white-space: pre-line">@(a.CompletionNotes ?? "-")</dd>
+                    }
+                    @if (a.CancelledAt != null)
+                    {
+                        <dt class="col-sm-4">Cancelled</dt><dd class="col-sm-8">@a.CancelledAt?.ToString("yyyy-MM-dd HH:mm") - @a.CancellationReason</dd>
+                    }
+                </dl>
+            </div>
+        </div>
+        @if (booked)
+        {
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <a asp-action="Edit" asp-route-id="@a.Id" class="btn btn-outline-primary btn-sm mb-3">Reschedule</a>
+                    <form asp-action="Complete" method="post" class="mb-3">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+                        <input type="hidden" name="Id" value="@a.Id" />
+                        <label for="CompleteNotes" class="form-label">Completion notes</label>
+                        <textarea name="Notes" id="CompleteNotes" class="form-control mb-1" rows="2" maxlength="2000"
+                                  data-val="true" data-val-length="Notes may be at most 2000 characters." data-val-length-max="2000"></textarea>
+                        <span class="text-danger small field-validation-valid" data-valmsg-for="Notes" data-valmsg-replace="true"></span>
+                        <button type="submit" class="btn btn-success btn-sm">Mark completed</button>
+                    </form>
+                    <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Appointments", Action = "Cancel", Id = a.Id, ButtonText = "Cancel appointment", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Cancel this appointment?" }' />
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header">History</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>When</th><th>From</th><th>To</th><th>By</th><th>Note</th></tr></thead>
+                    <tbody>
+                        @foreach (var h in a.StatusChanges.OrderBy(h => h.ChangedAt))
+                        {
+                            <tr><td>@h.ChangedAt.ToString("yyyy-MM-dd HH:mm")</td><td>@h.FromStatus</td><td>@h.ToStatus</td><td>@h.ChangedBy</td><td>@h.Note</td></tr>
+                        }
+                        @if (!a.StatusChanges.Any())
+                        {
+                            <tr><td colspan="5" class="text-muted">No changes since booking.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to appointments</a>

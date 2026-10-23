@@ -1,0 +1,31 @@
+@model UserEditViewModel
+@{
+    ViewData["Title"] = "Edit user";
+}
+<h1 class="h3 mb-1">Edit user</h1>
+<p class="text-muted">@Model.Email</p>
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="card card-body shadow-sm" style="max-width: 40rem">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Email" />
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label"></label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Role" class="form-label"></label>
+        <select asp-for="Role" asp-items="Model.Roles" class="form-select"><option value="">-- select --</option></select>
+        <span asp-validation-for="Role" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label asp-for="IsActive" class="form-check-label"></label>
+        <span asp-validation-for="IsActive" class="text-danger"></span>
+    </div>
+    <p class="small text-muted">Disabled users cannot sign in. You cannot disable or demote your own account or the last active administrator.</p>
+    <div>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-link">Cancel</a>
+    </div>
+</form>

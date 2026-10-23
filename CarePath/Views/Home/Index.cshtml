@@ -1,0 +1,102 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var clinical = User.IsInRole(Roles.Physician) || User.IsInRole(Roles.Nurse);
+}
+<h1 class="h3 mb-3">Hospital operations</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Occupied beds</div>
+                <div class="display-6">@Model.OccupiedBeds <span class="fs-6 text-muted">/ @Model.TotalBeds</span></div>
+                <div class="small text-muted">@Model.OccupancyPercent% occupancy &middot; @Model.AvailableBeds available</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Open admissions</div>
+                <div class="display-6">@Model.OpenAdmissions</div>
+                @if (clinical)
+                {
+                    <a class="small" asp-controller="Admissions" asp-action="Index">View admissions</a>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Pending lab orders</div>
+                <div class="display-6">@Model.PendingLabOrders</div>
+                @if (clinical)
+                {
+                    <a class="small" asp-controller="Lab" asp-action="Index">Open worklist</a>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Draft invoices</div>
+                <div class="display-6">@Model.DraftInvoices</div>
+                @if (User.IsInRole(Roles.BillingClerk) || User.IsInRole(Roles.Admin))
+                {
+                    <a class="small" asp-controller="Invoices" asp-action="Index" asp-route-status="Draft">Review drafts</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm"><div class="card-body d-flex justify-content-between"><span>Pending medication orders</span><strong>@Model.PendingMedicationOrders</strong></div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm"><div class="card-body d-flex justify-content-between"><span>Appointments today</span><strong>@Model.TodaysAppointments</strong></div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm"><div class="card-body d-flex justify-content-between"><span>Stock lines at reorder level</span><strong>@Model.LowStockItems</strong></div></div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header">Most recent open admissions</div>
+    <div class="card-body p-0">
+        @if (Model.RecentAdmissions.Count == 0)
+        {
+            <p class="p-3 mb-0 text-muted">No patients are currently admitted.</p>
+        }
+        else
+        {
+            <table class="table table-sm table-hover mb-0">
+                <thead><tr><th>Admission</th><th>Patient</th><th>Bed</th><th>Admitted</th></tr></thead>
+                <tbody>
+                    @foreach (var a in Model.RecentAdmissions)
+                    {
+                        <tr>
+                            <td>
+                                @if (clinical)
+                                {
+                                    <a asp-controller="Admissions" asp-action="Details" asp-route-id="@a.Id">@a.AdmissionNumber</a>
+                                }
+                                else
+                                {
+                                    @a.AdmissionNumber
+                                }
+                            </td>
+                            <td>@a.Patient.FullName <span class="text-muted small">@a.Patient.MedicalRecordNumber</span></td>
+                            <td>@a.CurrentBed.BedLabel()</td>
+                            <td>@a.AdmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

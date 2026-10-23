@@ -1,0 +1,12 @@
+@model BedFormViewModel
+@{
+    ViewData["Title"] = "Add bed";
+}
+<h1 class="h3 mb-3">Add bed</h1>
+<form asp-action="Create" method="post" class="card card-body shadow-sm" style="max-width: 48rem">
+    <partial name="_BedForm" model="Model" />
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>

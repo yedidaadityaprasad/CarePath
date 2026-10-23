@@ -1,0 +1,12 @@
+@model CoverageFormViewModel
+@{
+    ViewData["Title"] = "Attach coverage";
+}
+<h1 class="h3 mb-3">Attach insurance coverage</h1>
+<form asp-action="Create" method="post" class="card card-body shadow-sm">
+    <partial name="_CoverageForm" model="Model" />
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Attach</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>

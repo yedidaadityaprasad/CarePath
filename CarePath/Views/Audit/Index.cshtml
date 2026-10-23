@@ -1,0 +1,55 @@
+@model AuditIndexViewModel
+@{
+    ViewData["Title"] = "Audit trail";
+}
+<h1 class="h3 mb-3">Audit trail</h1>
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger col-12"></div>
+    <div class="col-md-2">
+        <label asp-for="EntityName" class="form-label"></label>
+        <select asp-for="EntityName" asp-items="Model.EntityNames" class="form-select"><option value="">Any</option></select>
+        <span asp-validation-for="EntityName" class="text-danger"></span>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="EntityId" class="form-label"></label>
+        <input asp-for="EntityId" class="form-control" />
+        <span asp-validation-for="EntityId" class="text-danger"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="UserName" class="form-label"></label>
+        <input asp-for="UserName" class="form-control" />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="From" class="form-label"></label>
+        <input asp-for="From" class="form-control" />
+        <span asp-validation-for="From" class="text-danger"></span>
+    </div>
+    <div class="col-md-2">
+        <label asp-for="To" class="form-label"></label>
+        <input asp-for="To" class="form-control" />
+        <span asp-validation-for="To" class="text-danger"></span>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary">Search</button></div>
+</form>
+<table class="table table-sm table-hover bg-white shadow-sm">
+    <thead><tr><th>When</th><th>User</th><th>Action</th><th>Entity</th><th>Id</th><th>Details</th></tr></thead>
+    <tbody>
+        @foreach (var e in Model.Results.Items)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@e.Id">@e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</a></td>
+                <td>@e.UserName</td>
+                <td>@e.Action</td>
+                <td>@e.EntityName</td>
+                <td>@e.EntityId</td>
+                <td class="text-truncate" style="max-width: 24rem">@e.Details</td>
+            </tr>
+        }
+        @if (Model.Results.Items.Count == 0)
+        {
+            <tr><td colspan="6" class="text-muted">No audit entries match.</td></tr>
+        }
+    </tbody>
+</table>
+<partial name="_Pager" model="Model.Results" />

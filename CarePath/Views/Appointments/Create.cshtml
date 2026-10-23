@@ -1,0 +1,12 @@
+@model AppointmentFormViewModel
+@{
+    ViewData["Title"] = "Book appointment";
+}
+<h1 class="h3 mb-3">Book appointment</h1>
+<form asp-action="Create" method="post" class="card card-body shadow-sm" style="max-width: 52rem">
+    <partial name="_AppointmentForm" model="Model" />
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Book</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>

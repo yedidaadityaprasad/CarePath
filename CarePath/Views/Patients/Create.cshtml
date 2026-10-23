@@ -1,0 +1,12 @@
+@model PatientFormViewModel
+@{
+    ViewData["Title"] = "Register patient";
+}
+<h1 class="h3 mb-3">Register patient</h1>
+<form asp-action="Create" method="post" class="card card-body shadow-sm">
+    <partial name="_PatientForm" model="Model" />
+    <div>
+        <button type="submit" class="btn btn-primary">Register</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>

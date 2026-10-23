@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Access denied";
+}
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-6">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h1 class="h4 text-danger">Access denied</h1>
+                <p class="mb-0">Your role does not allow access to this page or action. If you need access, ask an administrator to update your role.</p>
+            </div>
+        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="btn btn-link mt-3 px-0" asp-controller="Home" asp-action="Index">Back to dashboard</a>
+        }
+        else
+        {
+            <a class="btn btn-link mt-3 px-0" asp-controller="Account" asp-action="Login">Sign in</a>
+        }
+    </div>
+</div>

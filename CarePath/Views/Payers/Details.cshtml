@@ -1,0 +1,33 @@
+@model PayerDetailsViewModel
+@{
+    var p = Model.Payer;
+    ViewData["Title"] = p.Name;
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <h1 class="h3 mb-0">@p.Name <small class="text-muted">@p.Code</small></h1>
+    <span class="badge fs-6 @StatusBadges.Active(p.IsActive)">@(p.IsActive ? "Active" : "Inactive")</span>
+</div>
+<div class="card shadow-sm mb-3" style="max-width: 40rem">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-5">Phone</dt><dd class="col-sm-7">@(p.Phone ?? "-")</dd>
+            <dt class="col-sm-5">Claims email</dt><dd class="col-sm-7">@(p.ClaimsEmail ?? "-")</dd>
+            <dt class="col-sm-5">Default coverage</dt><dd class="col-sm-7">@p.DefaultCoveragePercent.ToString("0.##")%</dd>
+            <dt class="col-sm-5">Active coverage records</dt><dd class="col-sm-7">@Model.ActiveCoverageCount</dd>
+        </dl>
+    </div>
+</div>
+<a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-outline-primary btn-sm mb-2">Edit</a>
+@if (p.IsActive)
+{
+    <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Payers", Action = "Deactivate", Id = p.Id, ButtonText = "Deactivate", ButtonClass = "btn-outline-danger", ConfirmMessage = "Deactivate this payer? New coverage cannot be attached to it." }' />
+}
+else
+{
+    <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Payers", Action = "Activate", Id = p.Id, ButtonText = "Activate", ButtonClass = "btn-outline-success" }' />
+}
+@* PLANTED-VIOLATION-1: permanent delete instead of a status change. *@
+<form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline" data-confirm="Permanently delete this payer?">
+    <button type="submit" class="btn btn-danger btn-sm mb-2">Delete permanently</button>
+</form>
+<a asp-action="Index" class="btn btn-link px-0">Back to payers</a>

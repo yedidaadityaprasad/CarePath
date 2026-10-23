@@ -1,0 +1,111 @@
+@model PractitionerDetailsViewModel
+@{
+    var p = Model.Practitioner;
+    ViewData["Title"] = p.DisplayName;
+    var isAdmin = User.IsInRole(Roles.Admin);
+}
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-0">@p.DisplayName</h1>
+        <div class="text-muted">@p.Type &middot; License @p.LicenseNumber &middot; @(p.Specialty?.Name ?? "No specialty")</div>
+    </div>
+    <span class="badge fs-6 @StatusBadges.Active(p.IsActive)">@(p.IsActive ? "Active" : "Inactive")</span>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header">Profile</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Email</dt><dd class="col-sm-7">@(p.Email ?? "-")</dd>
+                    <dt class="col-sm-5">Phone</dt><dd class="col-sm-7">@(p.Phone ?? "-")</dd>
+                    <dt class="col-sm-5">Attending</dt><dd class="col-sm-7">@Model.OpenAdmissionCount open admission(s)</dd>
+                    <dt class="col-sm-5">Added</dt><dd class="col-sm-7">@p.CreatedAt.ToString("yyyy-MM-dd")</dd>
+                </dl>
+            </div>
+        </div>
+        @if (isAdmin)
+        {
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-outline-primary btn-sm mb-2">Edit</a>
+                    @if (p.IsActive)
+                    {
+                        <p class="small text-muted mb-1">Deactivation cancels future shifts and appointments.</p>
+                        <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Practitioners", Action = "Deactivate", Id = p.Id, ButtonText = "Deactivate", ButtonClass = "btn-outline-danger", RequireReason = true, ConfirmMessage = "Deactivate this practitioner?" }' />
+                    }
+                    else
+                    {
+                        <partial name="_StatusActionForm" model='new StatusActionFormModel { Controller = "Practitioners", Action = "Activate", Id = p.Id, ButtonText = "Activate", ButtonClass = "btn-outline-success", RequireReason = true }' />
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Upcoming shifts</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Start</th><th>End</th><th>Ward</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in Model.UpcomingShifts)
+                        {
+                            <tr>
+                                <td><a asp-controller="Shifts" asp-action="Details" asp-route-id="@s.Id">@s.StartsAt.ToString("yyyy-MM-dd HH:mm")</a></td>
+                                <td>@s.EndsAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@s.Ward.Name</td>
+                            </tr>
+                        }
+                        @if (Model.UpcomingShifts.Count == 0)
+                        {
+                            <tr><td colspan="3" class="text-muted">No scheduled shifts.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">Upcoming appointments</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Start</th><th>Patient</th><th>Reason</th></tr></thead>
+                    <tbody>
+                        @foreach (var a in Model.UpcomingAppointments)
+                        {
+                            <tr>
+                                <td><a asp-controller="Appointments" asp-action="Details" asp-route-id="@a.Id">@a.StartsAt.ToString("yyyy-MM-dd HH:mm")</a></td>
+                                <td>@a.Patient.FullName</td>
+                                <td>@a.Reason</td>
+                            </tr>
+                        }
+                        @if (Model.UpcomingAppointments.Count == 0)
+                        {
+                            <tr><td colspan="3" class="text-muted">No booked appointments.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header">Status history</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>When</th><th>Change</th><th>By</th><th>Reason</th></tr></thead>
+                    <tbody>
+                        @foreach (var c in p.StatusChanges.OrderByDescending(c => c.ChangedAt))
+                        {
+                            <tr><td>@c.ChangedAt.ToString("yyyy-MM-dd HH:mm")</td><td>@(c.IsActive ? "Activated" : "Deactivated")</td><td>@c.ChangedBy</td><td>@c.Reason</td></tr>
+                        }
+                        @if (!p.StatusChanges.Any())
+                        {
+                            <tr><td colspan="4" class="text-muted">No status changes.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<a asp-action="Index" class="btn btn-link mt-2 px-0">Back to practitioners</a>

@@ -1,0 +1,12 @@
+@model ShiftFormViewModel
+@{
+    ViewData["Title"] = "Schedule shift";
+}
+<h1 class="h3 mb-3">Schedule shift</h1>
+<form asp-action="Create" method="post" class="card card-body shadow-sm" style="max-width: 52rem">
+    <partial name="_ShiftForm" model="Model" />
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Schedule</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>

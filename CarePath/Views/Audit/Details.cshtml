@@ -1,0 +1,39 @@
+@model AuditDetailsViewModel
+@{
+    var e = Model.Entry;
+    ViewData["Title"] = "Audit entry";
+}
+<h1 class="h3 mb-3">@e.Action <small class="text-muted">@e.EntityName #@e.EntityId</small></h1>
+<div class="card shadow-sm mb-3" style="max-width: 48rem">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">When</dt><dd class="col-sm-9">@e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+            <dt class="col-sm-3">User</dt><dd class="col-sm-9">@e.UserName</dd>
+            <dt class="col-sm-3">Details</dt><dd class="col-sm-9" style="white-space: pre-line">@(e.Details ?? "-")</dd>
+        </dl>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-header">Other activity on this @e.EntityName</div>
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.RelatedEntries)
+                {
+                    <tr class="@(r.Id == e.Id ? "table-active" : "")">
+                        <td><a asp-action="Details" asp-route-id="@r.Id">@r.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</a></td>
+                        <td>@r.UserName</td>
+                        <td>@r.Action</td>
+                        <td>@r.Details</td>
+                    </tr>
+                }
+                @if (Model.RelatedEntries.Count == 0)
+                {
+                    <tr><td colspan="4" class="text-muted">No other entries.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<a asp-action="Index" asp-route-entityName="@e.EntityName" asp-route-entityId="@e.EntityId" class="btn btn-link mt-2 px-0">Search this entity</a>

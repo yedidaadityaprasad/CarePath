@@ -1,0 +1,37 @@
+@model PayerIndexViewModel
+@{
+    ViewData["Title"] = "Payers";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Insurance payers</h1>
+    <a class="btn btn-primary" asp-action="Create">Add payer</a>
+</div>
+<form asp-action="Index" method="get" class="mb-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-check form-check-inline">
+        <input asp-for="IncludeInactive" class="form-check-input" onchange="this.form.submit()" />
+        <label asp-for="IncludeInactive" class="form-check-label"></label>
+        <span asp-validation-for="IncludeInactive" class="text-danger"></span>
+    </div>
+    <noscript><button type="submit" class="btn btn-sm btn-outline-primary">Apply</button></noscript>
+</form>
+<table class="table table-hover bg-white shadow-sm">
+    <thead><tr><th>Code</th><th>Name</th><th>Phone</th><th>Claims email</th><th>Default %</th><th>Status</th></tr></thead>
+    <tbody>
+        @foreach (var p in Model.Payers)
+        {
+            <tr>
+                <td><a asp-action="Details" asp-route-id="@p.Id">@p.Code</a></td>
+                <td>@p.Name</td>
+                <td>@p.Phone</td>
+                <td>@p.ClaimsEmail</td>
+                <td>@p.DefaultCoveragePercent.ToString("0.##")</td>
+                <td><span class="badge @StatusBadges.Active(p.IsActive)">@(p.IsActive ? "Active" : "Inactive")</span></td>
+            </tr>
+        }
+        @if (Model.Payers.Count == 0)
+        {
+            <tr><td colspan="6" class="text-muted">No payers configured.</td></tr>
+        }
+    </tbody>
+</table>
