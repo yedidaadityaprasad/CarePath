@@ -4,6 +4,7 @@ namespace CarePath.Exceptions;
 
 /// <summary>
 /// Base type for business-rule violations. The message is safe to show to end users.
+/// .NET 10: Inherits from Exception — no changes required.
 /// </summary>
 public abstract class DomainException : Exception
 {

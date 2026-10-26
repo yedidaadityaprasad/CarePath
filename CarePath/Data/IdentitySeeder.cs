@@ -1,3 +1,4 @@
+using CarePath.Data;
 using CarePath.Infrastructure;
 using CarePath.Models.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -14,7 +15,10 @@ public class SeedAdminOptions
     public string Password { get; set; } = string.Empty;
 }
 
-/// <summary>Creates the application roles and the initial Admin account at startup.</summary>
+/// <summary>
+/// Creates the application roles and the initial Admin account at startup.
+/// .NET 10: Uses IServiceProvider overload compatible with the minimal hosting model.
+/// </summary>
 public static class IdentitySeeder
 {
     public static async Task SeedAsync(IServiceProvider services)
@@ -33,6 +37,7 @@ public static class IdentitySeeder
             logger.LogWarning("Cannot connect to the database; skipping role and admin seeding. Run 'dotnet ef database update' first.");
             return;
         }
+
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
         {
             logger.LogWarning("The database has pending migrations; skipping seeding. Run 'dotnet ef database update'.");
@@ -47,13 +52,16 @@ public static class IdentitySeeder
                 var result = await roleManager.CreateAsync(new IdentityRole(role));
                 if (!result.Succeeded)
                 {
-                    throw new InvalidOperationException($"Could not create role {role}: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+                    throw new InvalidOperationException(
+                        $"Could not create role {role}: {string.Join("; ", result.Errors.Select(e => e.Description))}");
                 }
                 logger.LogInformation("Created role {Role}", role);
             }
         }
 
-        var options = configuration.GetSection(SeedAdminOptions.SectionName).Get<SeedAdminOptions>() ?? new SeedAdminOptions();
+        var options = configuration.GetSection(SeedAdminOptions.SectionName).Get<SeedAdminOptions>()
+                      ?? new SeedAdminOptions();
+
         if (string.IsNullOrWhiteSpace(options.Email))
         {
             logger.LogWarning("SeedAdmin:Email is not configured; no Admin user was seeded.");
@@ -66,10 +74,13 @@ public static class IdentitySeeder
         {
             if (string.IsNullOrWhiteSpace(options.Password))
             {
-                logger.LogWarning("SeedAdmin:Password is not configured; set it with 'dotnet user-secrets set SeedAdmin:Password <value>' to create {Email}.", options.Email);
+                logger.LogWarning(
+                    "SeedAdmin:Password is not configured; set it with 'dotnet user-secrets set SeedAdmin:Password <value>' to create {Email}.",
+                    options.Email);
                 return;
             }
 
+            // .NET 10: TimeProvider.System used for consistent UTC-aware timestamps
             admin = new ApplicationUser
             {
                 UserName = options.Email,
@@ -77,12 +88,14 @@ public static class IdentitySeeder
                 EmailConfirmed = true,
                 FullName = options.FullName,
                 IsActive = true,
-                CreatedAt = DateTime.Now
+                CreatedAt = TimeProvider.System.GetLocalNow().DateTime
             };
+
             var created = await userManager.CreateAsync(admin, options.Password);
             if (!created.Succeeded)
             {
-                throw new InvalidOperationException($"Could not create admin user: {string.Join("; ", created.Errors.Select(e => e.Description))}");
+                throw new InvalidOperationException(
+                    $"Could not create admin user: {string.Join("; ", created.Errors.Select(e => e.Description))}");
             }
             logger.LogInformation("Created admin user {Email}", options.Email);
         }

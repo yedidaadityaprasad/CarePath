@@ -10,6 +10,7 @@ namespace CarePath.Infrastructure;
 
 /// <summary>
 /// Turns domain exceptions that escape a controller action into a friendly error page.
+/// .NET 10: Implements IExceptionFilter (synchronous); for async scenarios use IAsyncExceptionFilter.
 /// </summary>
 public class DomainExceptionFilter : IExceptionFilter
 {
@@ -30,7 +31,8 @@ public class DomainExceptionFilter : IExceptionFilter
         }
 
         var traceId = Activity.Current?.Id ?? context.HttpContext.TraceIdentifier;
-        _logger.LogWarning(domainException,
+        _logger.LogWarning(
+            domainException,
             "Domain rule violation {ExceptionType} on {Method} {Path} by {User} (trace {TraceId}): {Message}",
             domainException.GetType().Name,
             context.HttpContext.Request.Method,

@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace CarePath.Exceptions;
 
+/// <summary>
+/// Thrown when a requested entity does not exist in the database.
+/// .NET 10: Maps to HTTP 404 via <see cref="DomainExceptionFilter"/>.
+/// </summary>
 public class EntityNotFoundException : DomainException
 {
     public EntityNotFoundException(string entityName, object key, string? propertyName = null)

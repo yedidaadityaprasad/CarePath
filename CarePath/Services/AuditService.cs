@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarePath.Services;
 
+/// <summary>
+/// Records and queries the application audit log.
+/// .NET 10: All async methods accept CancellationToken for proper request cancellation support.
+/// </summary>
 public class AuditService : IAuditService
 {
     private readonly ApplicationDbContext _db;
@@ -30,7 +34,8 @@ public class AuditService : IAuditService
         var id = entityId?.ToString();
         if (string.IsNullOrWhiteSpace(id) || id == "0")
         {
-            throw new InvalidOperationException($"Cannot audit {action} on {entityName} before the entity has been saved.");
+            throw new InvalidOperationException(
+                $"Cannot audit {action} on {entityName} before the entity has been saved.");
         }
 
         _db.AuditEntries.Add(new AuditEntry
@@ -44,14 +49,19 @@ public class AuditService : IAuditService
         });
     }
 
-    public Task<PagedResult<AuditEntry>> SearchAsync(AuditIndexViewModel filter, int pageSize = 50)
+    public Task<PagedResult<AuditEntry>> SearchAsync(
+        AuditIndexViewModel filter,
+        int pageSize = 50,
+        CancellationToken cancellationToken = default)
     {
         if (filter.From.HasValue && filter.To.HasValue && filter.To.Value.Date < filter.From.Value.Date)
         {
-            throw new DomainValidationException("The 'To' date must be on or after the 'From' date.", nameof(filter.To));
+            throw new DomainValidationException(
+                "The 'To' date must be on or after the 'From' date.", nameof(filter.To));
         }
 
         var query = _db.AuditEntries.AsNoTracking().AsQueryable();
+
         if (!string.IsNullOrWhiteSpace(filter.EntityName))
         {
             query = query.Where(a => a.EntityName == filter.EntityName);
@@ -77,28 +87,43 @@ public class AuditService : IAuditService
             query = query.Where(a => a.Timestamp < toExclusive);
         }
 
-        return query.OrderByDescending(a => a.Timestamp).ThenByDescending(a => a.Id)
-            .ToPagedResultAsync(filter.Page, pageSize);
+        return query
+            .OrderByDescending(a => a.Timestamp)
+            .ThenByDescending(a => a.Id)
+            .ToPagedResultAsync(filter.Page, pageSize, cancellationToken);
     }
 
-    public async Task<AuditDetailsViewModel> GetDetailsAsync(int id)
+    public async Task<AuditDetailsViewModel> GetDetailsAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var entry = await _db.AuditEntries.AsNoTracking().GetRequiredAsync(id, "Audit entry");
+        var entry = await _db.AuditEntries.AsNoTracking()
+            .GetRequiredAsync(id, "Audit entry", cancellationToken: cancellationToken);
+
         var related = await _db.AuditEntries.AsNoTracking()
             .Where(a => a.EntityName == entry.EntityName && a.EntityId == entry.EntityId && a.Id != entry.Id)
             .OrderByDescending(a => a.Timestamp)
             .Take(50)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
+
         return new AuditDetailsViewModel { Entry = entry, RelatedEntries = related };
     }
 
-    public async Task<IReadOnlyList<string>> GetEntityNamesAsync() =>
-        await _db.AuditEntries.AsNoTracking().Select(a => a.EntityName).Distinct().OrderBy(n => n).ToListAsync();
+    public async Task<IReadOnlyList<string>> GetEntityNamesAsync(
+        CancellationToken cancellationToken = default) =>
+        await _db.AuditEntries.AsNoTracking()
+            .Select(a => a.EntityName)
+            .Distinct()
+            .OrderBy(n => n)
+            .ToListAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<AuditEntry>> GetRecentForUserAsync(string userName, int take = 20) =>
+    public async Task<IReadOnlyList<AuditEntry>> GetRecentForUserAsync(
+        string userName,
+        int take = 20,
+        CancellationToken cancellationToken = default) =>
         await _db.AuditEntries.AsNoTracking()
             .Where(a => a.UserName == userName)
             .OrderByDescending(a => a.Timestamp)
             .Take(take)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 }

@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarePath.Services;
 
+/// <summary>
+/// Manages application user accounts and role assignments.
+/// .NET 10: Uses updated IClock (backed by TimeProvider) for timestamp generation.
+/// </summary>
 public class UserAdminService : IUserAdminService
 {
     private readonly UserManager<ApplicationUser> _users;
@@ -15,7 +19,11 @@ public class UserAdminService : IUserAdminService
     private readonly IAuditService _audit;
     private readonly IClock _clock;
 
-    public UserAdminService(UserManager<ApplicationUser> users, ApplicationDbContext db, IAuditService audit, IClock clock)
+    public UserAdminService(
+        UserManager<ApplicationUser> users,
+        ApplicationDbContext db,
+        IAuditService audit,
+        IClock clock)
     {
         _users = users;
         _db = db;
@@ -29,7 +37,9 @@ public class UserAdminService : IUserAdminService
         var roleLookup = await (from ur in _db.UserRoles
                                 join r in _db.Roles on ur.RoleId equals r.Id
                                 select new { ur.UserId, r.Name }).ToListAsync();
-        return users.Select(u => ToSummary(u, roleLookup.Where(r => r.UserId == u.Id).Select(r => r.Name!).ToList())).ToList();
+        return users
+            .Select(u => ToSummary(u, roleLookup.Where(r => r.UserId == u.Id).Select(r => r.Name!).ToList()))
+            .ToList();
     }
 
     public async Task<UserDetailsViewModel> GetDetailsAsync(string id)
@@ -61,6 +71,7 @@ public class UserAdminService : IUserAdminService
     {
         var role = ValidateRole(model.Role);
         var email = (model.Email ?? string.Empty).Trim();
+
         if (await _users.FindByEmailAsync(email) != null)
         {
             throw new DuplicateValueException("User", nameof(model.Email), "email", email);
@@ -75,6 +86,7 @@ public class UserAdminService : IUserAdminService
             IsActive = true,
             CreatedAt = _clock.Now
         };
+
         var created = await _users.CreateAsync(user, model.Password ?? string.Empty);
         ThrowIfFailed(created, nameof(model.Password));
         ThrowIfFailed(await _users.AddToRoleAsync(user, role), nameof(model.Role));
@@ -93,7 +105,9 @@ public class UserAdminService : IUserAdminService
 
         if (isSelf && (!model.IsActive || (currentRoles.Contains(Roles.Admin) && role != Roles.Admin)))
         {
-            throw new DomainValidationException("You cannot deactivate your own account or remove your own Admin role.", nameof(model.IsActive));
+            throw new DomainValidationException(
+                "You cannot deactivate your own account or remove your own Admin role.",
+                nameof(model.IsActive));
         }
 
         if (currentRoles.Contains(Roles.Admin) && (role != Roles.Admin || !model.IsActive))
@@ -101,7 +115,9 @@ public class UserAdminService : IUserAdminService
             var activeAdmins = (await _users.GetUsersInRoleAsync(Roles.Admin)).Count(u => u.IsActive);
             if (activeAdmins <= 1)
             {
-                throw new DomainValidationException("At least one active Admin account must remain.", nameof(model.Role));
+                throw new DomainValidationException(
+                    "At least one active Admin account must remain.",
+                    nameof(model.Role));
             }
         }
 
@@ -117,16 +133,20 @@ public class UserAdminService : IUserAdminService
             ThrowIfFailed(await _users.AddToRoleAsync(user, role), nameof(model.Role));
         }
 
-        _audit.Record(AuditActions.UserUpdated, nameof(ApplicationUser), user.Id, $"role {role}, active {model.IsActive}");
+        _audit.Record(AuditActions.UserUpdated, nameof(ApplicationUser), user.Id,
+            $"role {role}, active {model.IsActive}");
         await _db.SaveChangesAsync();
     }
+
+    // ── Private helpers ──────────────────────────────────────────────────────
 
     private async Task<ApplicationUser> FindAsync(string id) =>
         await _users.FindByIdAsync(id) ?? throw new EntityNotFoundException("User", id);
 
     private static string ValidateRole(string? role)
     {
-        var match = Roles.All.FirstOrDefault(r => string.Equals(r, role, StringComparison.OrdinalIgnoreCase));
+        var match = Roles.All.FirstOrDefault(r =>
+            string.Equals(r, role, StringComparison.OrdinalIgnoreCase));
         return match ?? throw new DomainValidationException($"'{role}' is not a valid role.", "Role");
     }
 
@@ -134,7 +154,9 @@ public class UserAdminService : IUserAdminService
     {
         if (!result.Succeeded)
         {
-            throw new DomainValidationException(string.Join(" ", result.Errors.Select(e => e.Description)), propertyName);
+            throw new DomainValidationException(
+                string.Join(" ", result.Errors.Select(e => e.Description)),
+                propertyName);
         }
     }
 

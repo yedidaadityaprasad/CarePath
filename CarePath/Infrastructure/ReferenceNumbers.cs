@@ -2,8 +2,13 @@ using System.Security.Cryptography;
 
 namespace CarePath.Infrastructure;
 
+/// <summary>
+/// Generates short, human-readable reference numbers for clinical and billing records.
+/// .NET 10: Uses RandomNumberGenerator.GetInt32 (cryptographically secure, no allocation).
+/// </summary>
 public static class ReferenceNumbers
 {
+    // Alphabet excludes visually ambiguous characters (0, O, 1, I)
     private const string Alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
     public static string Next(string prefix, DateTime at)

@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarePath.Controllers;
 
+/// <summary>
+/// Dashboard and error-handling controller.
+/// .NET 10: Action methods accept CancellationToken for proper request cancellation.
+/// IExceptionHandlerPathFeature is still the recommended way to access exception details.
+/// </summary>
 public class HomeController : CarePathController
 {
     private readonly IDashboardService _dashboard;
@@ -18,7 +23,8 @@ public class HomeController : CarePathController
         _logger = logger;
     }
 
-    public async Task<IActionResult> Index() => View(await _dashboard.GetAsync());
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+        => View(await _dashboard.GetAsync(cancellationToken));
 
     [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -28,7 +34,11 @@ public class HomeController : CarePathController
         var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         if (feature?.Error != null)
         {
-            _logger.LogError(feature.Error, "Unhandled exception on {Path} (trace {TraceId})", feature.Path, requestId);
+            _logger.LogError(
+                feature.Error,
+                "Unhandled exception on {Path} (trace {TraceId})",
+                feature.Path,
+                requestId);
         }
         return View(new ErrorViewModel { RequestId = requestId });
     }

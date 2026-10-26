@@ -6,13 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CarePath.Controllers;
 
+/// <summary>
+/// Handles user authentication (login/logout) and access-denied pages.
+/// .NET 10: Uses ASP.NET Core Identity with cookie authentication — no changes to the pattern.
+/// </summary>
 public class AccountController : CarePathController
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<AccountController> _logger;
 
-    public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, ILogger<AccountController> logger)
+    public AccountController(
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager,
+        ILogger<AccountController> logger)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -47,12 +54,16 @@ public class AccountController : CarePathController
             return View(model);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(model.Email!, model.Password!, model.RememberMe, lockoutOnFailure: true);
+        var result = await _signInManager.PasswordSignInAsync(
+            model.Email!, model.Password!, model.RememberMe, lockoutOnFailure: true);
+
         if (result.Succeeded)
         {
             _logger.LogInformation("User {Email} signed in", model.Email);
             Success($"Welcome back{(user != null ? ", " + user.FullName : string.Empty)}.");
-            return Url.IsLocalUrl(model.ReturnUrl) ? Redirect(model.ReturnUrl!) : RedirectToAction("Index", "Home");
+            return Url.IsLocalUrl(model.ReturnUrl)
+                ? Redirect(model.ReturnUrl!)
+                : RedirectToAction("Index", "Home");
         }
 
         ModelState.AddModelError(string.Empty, result.IsLockedOut

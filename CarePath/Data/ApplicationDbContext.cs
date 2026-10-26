@@ -4,6 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarePath.Data;
 
+/// <summary>
+/// Main EF Core DbContext for CarePath.
+/// .NET 10 / EF Core 10: Uses IdentityDbContext with ApplicationUser.
+/// All domain foreign keys use DeleteBehavior.Restrict to prevent accidental cascade deletes
+/// across clinical and financial history tables.
+/// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -63,9 +69,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         var domainForeignKeys = builder.Model.GetEntityTypes()
             .Where(t => typeof(Entity).IsAssignableFrom(t.ClrType))
             .SelectMany(t => t.GetForeignKeys());
+
         foreach (var foreignKey in domainForeignKeys)
         {
             foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
         }
     }
+
+    // .NET 10 / EF Core 10: Override SaveChangesAsync to support future interceptors or
+    // audit hooks without changing the service layer.
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => base.SaveChangesAsync(cancellationToken);
 }

@@ -2,7 +2,10 @@ using CarePath.Models.Entities;
 
 namespace CarePath.Infrastructure;
 
-/// <summary>Maps domain statuses to Bootstrap badge classes for consistent display.</summary>
+/// <summary>
+/// Maps domain status enumerations to Bootstrap 5 badge CSS classes for consistent display.
+/// .NET 10: No changes required — pure C# switch expressions.
+/// </summary>
 public static class StatusBadges
 {
     public static string For(BedStatus status) => status switch
@@ -12,9 +15,11 @@ public static class StatusBadges
         _ => "bg-secondary"
     };
 
-    public static string For(AdmissionStatus status) => status == AdmissionStatus.Open ? "bg-primary" : "bg-secondary";
+    public static string For(AdmissionStatus status)
+        => status == AdmissionStatus.Open ? "bg-primary" : "bg-secondary";
 
-    public static string For(ShiftStatus status) => status == ShiftStatus.Scheduled ? "bg-info text-dark" : "bg-secondary";
+    public static string For(ShiftStatus status)
+        => status == ShiftStatus.Scheduled ? "bg-info text-dark" : "bg-secondary";
 
     public static string For(AppointmentStatus status) => status switch
     {
