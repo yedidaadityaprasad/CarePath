@@ -1,7 +1,7 @@
 # CarePath
 
-CarePath is a hospital operations application built with **ASP.NET Core MVC on .NET 6** (`net6.0`).
-It uses server-rendered Razor views, EF Core 6 on SQL Server, and ASP.NET Core Identity with roles.
+CarePath is a hospital operations application built with **ASP.NET Core MVC on .NET 10** (`net10.0`).
+It uses server-rendered Razor views, EF Core 10 on SQL Server, and ASP.NET Core Identity with roles.
 
 It covers patients, insurance coverage and payers, practitioners, wards and beds, admissions
 (transfer, discharge, notes, vitals), shifts, appointments, clinical orders, laboratory,
@@ -15,14 +15,14 @@ pharmacy stock and dispensing, billing (invoices and payments), user administrat
 | `CarePath/` | MVC web project (Controllers, Views, Services, Data, Models) |
 | `CarePath/Data/Migrations/` | Initial EF Core migration |
 | `CarePath.Tests/` | xUnit service tests (SQLite in-memory, test project only) |
-| `global.json` | Pins the .NET 6 SDK |
-| `.config/dotnet-tools.json` | Local `dotnet-ef` 6.0.x tool |
+| `global.json` | Pins the .NET 10 SDK |
+| `.config/dotnet-tools.json` | Local `dotnet-ef` 10.0.x tool |
 
 ## Prerequisites
 
-1. **.NET 6 SDK** (6.0.4xx). Download it from <https://dotnet.microsoft.com/download/dotnet/6.0>,
-   or on Windows run `winget install Microsoft.DotNet.SDK.6`.
-   Check with `dotnet --list-sdks`. `global.json` selects 6.0.428 and rolls forward to any later 6.0 feature band.
+1. **.NET 10 SDK** (10.0.1xx). Download it from <https://dotnet.microsoft.com/download/dotnet/10.0>,
+   or on Windows run `winget install Microsoft.DotNet.SDK.10`.
+   Check with `dotnet --list-sdks`. `global.json` selects 10.0.100 and rolls forward to any later 10.0 feature band.
 2. **SQL Server**: LocalDB (installed with Visual Studio or SQL Server Express), or any SQL Server instance.
 
 ## Configure the connection string
